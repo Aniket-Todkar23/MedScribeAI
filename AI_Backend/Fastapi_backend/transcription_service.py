@@ -105,26 +105,32 @@ class WhisperTranscriber:
             self.load()
 
         logger.info("Transcribing with Whisper...")
+        import torch
         options = {
             "word_timestamps": True,   # needed for diarization alignment
             "verbose": False,
+            "fp16": torch.cuda.is_available(),  # fp16 only on CUDA; avoids CPU issues
         }
         if self.language:
             options["language"] = self.language
 
-        # Load audio as numpy via soundfile to avoid whisper's ffmpeg dependency
-        import numpy as np
-        import soundfile as sf
-        data, sr = sf.read(audio_path, dtype="float32")
-        if len(data.shape) > 1:
-            data = data.mean(axis=1)  # convert to mono
-        if sr != 16000:
-            # Resample to 16kHz using scipy
-            from scipy.signal import resample as scipy_resample
-            num_samples = int(len(data) * 16000 / sr)
-            data = scipy_resample(data, num_samples).astype(np.float32)
+        # Load audio using whisper's built-in ffmpeg loader
+        import whisper
+        data = whisper.load_audio(audio_path)
 
-        result = self._model.transcribe(data, **options)
+        if len(data) == 0:
+            logger.warning("Audio file is empty or could not be decoded.")
+            return {"text": "", "segments": []}
+
+        try:
+            result = self._model.transcribe(data, **options)
+        except (TypeError, RuntimeError) as e:
+            # Known issue: word_timestamps hooks can crash on certain
+            # PyTorch/Whisper version combos.  Retry without them.
+            logger.warning(f"word_timestamps failed ({e}), retrying without them...")
+            options["word_timestamps"] = False
+            result = self._model.transcribe(data, **options)
+
         duration = result["segments"][-1]["end"] if result["segments"] else 0
         logger.info(f"Transcription complete: {len(result['segments'])} segments, ~{duration:.0f}s")
         return result
@@ -163,7 +169,7 @@ class PyannoteDiarizer:
             logger.info("Loading pyannote speaker diarization pipeline...")
             self._pipeline = Pipeline.from_pretrained(
                 "pyannote/speaker-diarization-3.1",
-                use_auth_token=self.hf_token,
+                token=self.hf_token,
             )
 
             # Use GPU if available
