@@ -7,6 +7,14 @@ const sanitize = (obj) => {
   return safe;
 };
 
+/** Build a consistent user shape for the frontend. */
+const buildUser = (entity, id_field, user_type) => ({
+  id:        entity[id_field],
+  name:      entity.full_name,
+  email:     entity.email,
+  user_type,
+});
+
 /* POST /api/auth/signup/doctor */
 const doctorSignup = async (req, res) => {
   const errors = validationResult(req);
@@ -19,8 +27,9 @@ const doctorSignup = async (req, res) => {
       return res.status(409).json({ message: 'A doctor with this email already exists.' });
 
     const doctor = await authService.createDoctor(req.body);
-    const token  = signToken({ id: doctor.doctor_id, email: doctor.email, user_type: 'doctor' });
-    return res.status(201).json({ token, user: { ...doctor, user_type: 'doctor' } });
+    const user   = buildUser(doctor, 'doctor_id', 'doctor');
+    const token  = signToken({ id: user.id, email: user.email, user_type: 'doctor' });
+    return res.status(201).json({ token, user });
   } catch (err) {
     if (err.code === '23505' && err.constraint === 'doctors_license_number_key')
       return res.status(409).json({ message: 'This license number is already registered.' });
@@ -41,8 +50,9 @@ const patientSignup = async (req, res) => {
       return res.status(409).json({ message: 'A patient with this email already exists.' });
 
     const patient = await authService.createPatient(req.body);
-    const token   = signToken({ id: patient.patient_id, email: patient.email, user_type: 'patient' });
-    return res.status(201).json({ token, user: { ...patient, user_type: 'patient' } });
+    const user    = buildUser(patient, 'patient_id', 'patient');
+    const token   = signToken({ id: user.id, email: user.email, user_type: 'patient' });
+    return res.status(201).json({ token, user });
   } catch (err) {
     console.error('[patientSignup]', err);
     return res.status(500).json({ message: 'Internal server error.' });
@@ -74,8 +84,9 @@ const login = async (req, res) => {
     if (!valid)
       return res.status(401).json({ message: 'Invalid email or password.' });
 
-    const token = signToken({ id: entity[id_field], email: entity.email, user_type });
-    return res.status(200).json({ token, user: { ...sanitize(entity), user_type } });
+    const user  = buildUser(entity, id_field, user_type);
+    const token = signToken({ id: user.id, email: user.email, user_type });
+    return res.status(200).json({ token, user });
   } catch (err) {
     console.error('[login]', err);
     return res.status(500).json({ message: 'Internal server error.' });

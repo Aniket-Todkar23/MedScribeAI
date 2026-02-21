@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import type { PatientSignupPayload } from '../../../types/auth';
+import styles from '../auth.module.css';
 
 interface PatientSignupFormProps {
   onSubmit: (payload: PatientSignupPayload) => void;
   onToggle: () => void;
+  onBack: () => void;
   isLoading: boolean;
   error: string | null;
 }
@@ -20,13 +22,13 @@ const EyeOffIcon = () => (
   </svg>
 );
 const LoadingDots = () => (
-  <span className="auth-loading-dots">
-    <span className="auth-dot" /><span className="auth-dot" /><span className="auth-dot" />
+  <span className={styles.loadingDots}>
+    <span className={styles.dot} /><span className={styles.dot} /><span className={styles.dot} />
   </span>
 );
 
 export const PatientSignupForm: React.FC<PatientSignupFormProps> = ({
-  onSubmit, onToggle, isLoading, error,
+  onSubmit, onToggle, onBack, isLoading, error,
 }) => {
   const [fullName, setFullName]             = useState('');
   const [email, setEmail]                   = useState('');
@@ -45,87 +47,86 @@ export const PatientSignupForm: React.FC<PatientSignupFormProps> = ({
     if (password !== confirm) { setLocalError("Passwords don't match."); return; }
     setLocalError('');
     onSubmit({
-      full_name:    fullName,
+      full_name:     fullName,
       email,
       password,
-      phone:        phone       || undefined,
+      phone:         phone      || undefined,
       date_of_birth: dob        || undefined,
-      gender:       (gender as 'male' | 'female' | 'other') || undefined,
-      blood_group:  bloodGroup  || undefined,
+      gender:        (gender as 'male' | 'female' | 'other') || undefined,
+      blood_group:   bloodGroup || undefined,
     });
   };
 
   const displayError = localError || error;
 
   return (
-    <div className="auth-form-inner">
-      <div className="auth-logo">
+    <div className={styles.formInner}>
+      <div className={styles.logoMark}>
         <svg viewBox="0 0 38 38" fill="none">
-          <rect width="38" height="38" rx="10" fill="#1F9FA3" />
+          <rect width="38" height="38" rx="10" fill="#6366f1" />
           <path d="M10 19L16.5 25.5L28 12.5" stroke="white" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
 
-      <div className="auth-form-header">
-        <h1 className="auth-form-title">Create patient account</h1>
-        <p className="auth-form-subtitle">Get started with your personal health portal.</p>
+      <div className={styles.formHeader}>
+        <h1 className={styles.formTitle}>Patient Registration</h1>
+        <p className={styles.formSubtitle}>Get started with your personal health portal.</p>
       </div>
 
-      <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        {displayError && <p className="auth-error">{displayError}</p>}
+      <form className={styles.form} onSubmit={handleSubmit} noValidate>
+        {displayError && <p className={styles.errorMsg} role="alert">{displayError}</p>}
 
-        {/* Required */}
-        <p className="auth-section-label">Account Details</p>
+        <p className={styles.sectionLabel}>Account Details</p>
 
-        <div className="auth-field-group">
-          <label className="auth-label" htmlFor="pt-name">Full Name <span className="auth-required">*</span></label>
-          <input id="pt-name" className="auth-input" type="text" placeholder="Jane Doe"
-            value={fullName} onChange={(e) => setFullName(e.target.value)} required autoComplete="name" />
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Full Name <span className={styles.required}>*</span></label>
+          <input className={styles.input} type="text" placeholder="Jane Doe"
+            value={fullName} onChange={(e) => setFullName(e.target.value)} required autoComplete="name" autoFocus />
         </div>
 
-        <div className="auth-field-group">
-          <label className="auth-label" htmlFor="pt-email">Email <span className="auth-required">*</span></label>
-          <input id="pt-email" className="auth-input" type="email" placeholder="jane@example.com"
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Email <span className={styles.required}>*</span></label>
+          <input className={styles.input} type="email" placeholder="jane@example.com"
             value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
         </div>
 
-        <div className="auth-field-group">
-          <label className="auth-label" htmlFor="pt-password">Password <span className="auth-required">*</span></label>
-          <div className="auth-input-wrapper">
-            <input id="pt-password" className={`auth-input auth-input-icon`}
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Password <span className={styles.required}>*</span></label>
+          <div className={styles.inputWrapper}>
+            <input className={`${styles.input} ${styles.inputWithIcon}`}
               type={showPassword ? 'text' : 'password'} placeholder="Min 8 characters"
               value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="new-password" />
-            <button type="button" className="auth-eye-btn" onClick={() => setShowPassword((v) => !v)} aria-label="Toggle password">
+            <button type="button" className={styles.eyeBtn}
+              onClick={() => setShowPassword((v) => !v)} tabIndex={-1} aria-label="Toggle password">
               {showPassword ? <EyeOffIcon /> : <EyeIcon />}
             </button>
           </div>
         </div>
 
-        <div className="auth-field-group">
-          <label className="auth-label" htmlFor="pt-confirm">Confirm Password <span className="auth-required">*</span></label>
-          <input id="pt-confirm" className="auth-input" type={showPassword ? 'text' : 'password'}
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Confirm Password <span className={styles.required}>*</span></label>
+          <input className={styles.input} type={showPassword ? 'text' : 'password'}
             placeholder="Repeat password" value={confirm} onChange={(e) => setConfirm(e.target.value)}
             required autoComplete="new-password" />
         </div>
 
-        {/* Optional */}
-        <p className="auth-section-label">Health Info <span className="auth-optional">(optional)</span></p>
+        <p className={styles.sectionLabel}>Health Info <span className={styles.optional}>(optional)</span></p>
 
-        <div className="auth-field-group">
-          <label className="auth-label" htmlFor="pt-phone">Phone</label>
-          <input id="pt-phone" className="auth-input" type="tel" placeholder="+1 555 000 0000"
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Phone</label>
+          <input className={styles.input} type="tel" placeholder="+1 555 000 0000"
             value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
         </div>
 
-        <div className="auth-field-group">
-          <label className="auth-label" htmlFor="pt-dob">Date of Birth</label>
-          <input id="pt-dob" className="auth-input" type="date"
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Date of Birth</label>
+          <input className={styles.input} type="date"
             value={dob} onChange={(e) => setDob(e.target.value)} />
         </div>
 
-        <div className="auth-field-group">
-          <label className="auth-label" htmlFor="pt-gender">Gender</label>
-          <select id="pt-gender" className="auth-input auth-select"
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Gender</label>
+          <select className={`${styles.input} ${styles.select}`}
             value={gender} onChange={(e) => setGender(e.target.value)}>
             <option value="">— Select —</option>
             <option value="male">Male</option>
@@ -134,21 +135,26 @@ export const PatientSignupForm: React.FC<PatientSignupFormProps> = ({
           </select>
         </div>
 
-        <div className="auth-field-group">
-          <label className="auth-label" htmlFor="pt-bg">Blood Group</label>
-          <input id="pt-bg" className="auth-input" type="text" placeholder="e.g. A+"
+        <div className={styles.fieldGroup}>
+          <label className={styles.label}>Blood Group</label>
+          <input className={styles.input} type="text" placeholder="e.g. A+"
             value={bloodGroup} onChange={(e) => setBloodGroup(e.target.value)} maxLength={5} />
         </div>
 
-        <button type="submit" className="auth-submit" disabled={isLoading}>
+        <button type="submit" className={styles.submitBtn} disabled={isLoading}>
           {isLoading ? <LoadingDots /> : 'Create Account'}
         </button>
       </form>
 
-      <p className="auth-toggle-text">
-        Already have an account?{' '}
-        <button type="button" className="auth-toggle-btn" onClick={onToggle}>Sign in</button>
-      </p>
+      <div className={styles.formFooter}>
+        <button type="button" className={styles.toggleBtn} onClick={onBack}>
+          &larr; Back
+        </button>
+        <p className={styles.toggleText}>
+          Already have an account?{' '}
+          <button type="button" className={styles.toggleBtn} onClick={onToggle}>Sign in</button>
+        </p>
+      </div>
     </div>
   );
 };

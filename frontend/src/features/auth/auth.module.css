@@ -354,6 +354,84 @@
   line-height: 1.65;
 }
 
+/* ── Section labels (used in multi-section signup forms) ─────── */
+.sectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6366f1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 8px 0 0 0;
+}
+
+.required {
+  color: #dc2626;
+}
+
+.optional {
+  font-weight: 400;
+  color: #9ca3af;
+  text-transform: none;
+  font-size: 11px;
+}
+
+.select {
+  cursor: pointer;
+}
+
+/* ── Form footer (back + toggle row) ────────────────────────── */
+.formFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 22px;
+  gap: 12px;
+}
+
+.formFooter .toggleText {
+  margin: 0;
+}
+
+/* ── Role selection cards ────────────────────────────────────── */
+.roleCards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 8px 0 24px;
+}
+
+.roleCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 28px 20px;
+  background: #f9fafb;
+  border: 1.5px solid #e9ecef;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease, background 0.2s ease;
+  color: #374151;
+}
+
+.roleCard:hover {
+  border-color: #6366f1;
+  background: #ffffff;
+  box-shadow: 0 4px 18px rgba(99, 102, 241, 0.12);
+  transform: translateY(-2px);
+}
+
+.roleCardTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0d0d14;
+}
+
+.roleCardDesc {
+  font-size: 12px;
+  color: #6b7280;
+}
+
 /* ── Responsive ──────────────────────────────────────────────────── */
 @media (max-width: 720px) {
   .card {
