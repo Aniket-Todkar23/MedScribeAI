@@ -1,9 +1,5 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
+/* Component-specific overrides go here */
+/* Global tokens are in src/styles/global.css */
 
 .logo {
   height: 6em;

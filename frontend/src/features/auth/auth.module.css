@@ -1,0 +1,378 @@
+/* ================================================================
+   AUTH MODULE — Clean · Minimal · Sophisticated
+   ================================================================ */
+
+/* ── Page ───────────────────────────────────────────────────────── */
+.page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #eef2ff 0%, #f8fafc 45%, #fdf4ff 100%);
+  padding: 24px;
+}
+
+/* ── Card ────────────────────────────────────────────────────────── */
+.card {
+  display: flex;
+  width: 100%;
+  max-width: 960px;
+  min-height: 580px;
+  background: #ffffff;
+  border-radius: 24px;
+  box-shadow:
+    0 0 0 1px rgba(99, 102, 241, 0.06),
+    0 24px 64px rgba(99, 102, 241, 0.09),
+    0 8px 24px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+/* ── Form Panel (Left) ───────────────────────────────────────────── */
+.formPanel {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 52px 56px;
+  position: relative;
+  overflow: hidden;
+}
+
+.formContent {
+  width: 100%;
+}
+
+/* Toggle animations */
+@keyframes formEnterAnim {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes formExitAnim {
+  from { opacity: 1; transform: translateY(0);    }
+  to   { opacity: 0; transform: translateY(-20px); }
+}
+
+.formEnter {
+  animation: formEnterAnim 0.42s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+.formExit {
+  animation: formExitAnim 0.35s cubic-bezier(0.55, 0.06, 0.68, 0.19) both;
+}
+
+/* ── Form Inner ─────────────────────────────────────────────────── */
+.formInner {
+  width: 100%;
+}
+
+/* Logo */
+.logoMark {
+  width: 38px;
+  height: 38px;
+  margin-bottom: 28px;
+}
+
+/* Header */
+.formHeader {
+  margin-bottom: 28px;
+}
+
+.formTitle {
+  font-size: 27px;
+  font-weight: 700;
+  color: #0d0d14;
+  letter-spacing: -0.6px;
+  margin: 0 0 7px 0;
+  line-height: 1.2;
+}
+
+.formSubtitle {
+  font-size: 14px;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.fieldGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Label */
+.label {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #374151;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Input */
+.input {
+  width: 100%;
+  padding: 11px 15px;
+  border: 1.5px solid #e9ecef;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #0d0d14;
+  background: #f9fafb;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  outline: none;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.input::placeholder {
+  color: #b0b8c4;
+}
+
+.input:focus {
+  border-color: #6366f1;
+  background: #ffffff;
+  box-shadow: 0 0 0 3.5px rgba(99, 102, 241, 0.1);
+}
+
+/* Input with eye icon */
+.inputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputWithIcon {
+  padding-right: 42px;
+}
+
+.eyeBtn {
+  position: absolute;
+  right: 11px;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease;
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.eyeBtn:hover {
+  color: #6366f1;
+}
+
+/* Forgot link */
+.forgotLink {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  color: #6366f1;
+  cursor: pointer;
+  font-weight: 500;
+  transition: opacity 0.2s;
+}
+
+.forgotLink:hover {
+  opacity: 0.72;
+}
+
+/* Error */
+.errorMsg {
+  font-size: 13px;
+  color: #dc2626;
+  margin: 0;
+  padding: 10px 14px;
+  background: #fef2f2;
+  border-radius: 8px;
+  border: 1px solid #fecaca;
+  line-height: 1.4;
+}
+
+/* Submit button */
+.submitBtn {
+  width: 100%;
+  padding: 13px 24px;
+  background: #6366f1;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  letter-spacing: 0.02em;
+  margin-top: 4px;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #4f46e5;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 22px rgba(99, 102, 241, 0.36);
+}
+
+.submitBtn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.submitBtn:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+}
+
+/* Toggle */
+.toggleText {
+  font-size: 13.5px;
+  color: #6b7280;
+  text-align: center;
+  margin: 22px 0 0 0;
+}
+
+.toggleBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: #6366f1;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.toggleBtn:hover {
+  opacity: 0.72;
+}
+
+/* Loading dots */
+@keyframes dotPulse {
+  0%, 80%, 100% { transform: scale(0.75); opacity: 0.45; }
+  40%           { transform: scale(1);    opacity: 1;    }
+}
+
+.loadingDots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 18px;
+}
+
+.dot {
+  width: 5px;
+  height: 5px;
+  background: #ffffff;
+  border-radius: 50%;
+  animation: dotPulse 1.2s ease-in-out infinite;
+}
+
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+/* ── Lottie Panel (Right) ────────────────────────────────────────── */
+.lottiePanel {
+  flex: 1;
+  background: #1e1b4b;
+  background-image:
+    radial-gradient(ellipse at 65% 30%, rgba(99, 102, 241, 0.32) 0%, transparent 55%),
+    radial-gradient(ellipse at 20% 80%, rgba(139, 92, 246, 0.22) 0%, transparent 50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 52px 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Subtle dot-grid texture */
+.lottiePanel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+.lottiePanelInner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.lottieWrapper {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 1 / 1;
+  filter: drop-shadow(0 12px 36px rgba(99, 102, 241, 0.35));
+}
+
+/* Tagline */
+@keyframes taglineEnter {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.tagline {
+  text-align: center;
+  animation: taglineEnter 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  animation-delay: 0.08s;
+}
+
+.taglineTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  letter-spacing: -0.3px;
+  line-height: 1.35;
+}
+
+.taglineText {
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.48);
+  margin: 0;
+  line-height: 1.65;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────── */
+@media (max-width: 720px) {
+  .card {
+    flex-direction: column-reverse;
+    max-width: 460px;
+    min-height: unset;
+  }
+
+  .lottiePanel {
+    padding: 32px 28px;
+  }
+
+  .lottieWrapper {
+    max-width: 160px;
+  }
+
+  .taglineTitle { font-size: 17px; }
+
+  .formPanel {
+    padding: 36px 28px;
+  }
+}
