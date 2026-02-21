@@ -1,0 +1,163 @@
+{
+  "entities": {
+    "vitals": [],
+    "symptoms": [
+      {
+        "description": "chest pain",
+        "duration": "approximately 8 hours",
+        "severity": "seven or eight",
+        "location": "last side of my chest",
+        "onset": "last night",
+        "character": "sharp",
+        "aggravating_factors": [
+          "laying down",
+          "taking a deep breath"
+        ],
+        "relieving_factors": [
+          "Not laying down"
+        ],
+        "associated_symptoms": [
+          "lightheaded",
+          "trouble breathing",
+          "racing of the heart"
+        ],
+        "icd_codes": [
+          {
+            "code": "R0789",
+            "title": "Other chest pain",
+            "version": 10,
+            "score": 1
+          },
+          {
+            "code": "R079",
+            "title": "Chest pain, unspecified",
+            "version": 10,
+            "score": 1
+          },
+          {
+            "code": "R071",
+            "title": "Chest pain on breathing",
+            "version": 10,
+            "score": 0.85
+          }
+        ]
+      },
+      {
+        "description": "trouble breathing",
+        "duration": "since the pain started",
+        "severity": null,
+        "location": null,
+        "onset": "since the pain started",
+        "character": null,
+        "aggravating_factors": [],
+        "relieving_factors": [],
+        "associated_symptoms": [],
+        "icd_codes": [
+          {
+            "code": "R0689",
+            "title": "Other abnormalities of breathing",
+            "version": 10,
+            "score": 0.333
+          },
+          {
+            "code": "R069",
+            "title": "Unspecified abnormalities of breathing",
+            "version": 10,
+            "score": 0.333
+          }
+        ]
+      },
+      {
+        "description": "lightheaded",
+        "duration": null,
+        "severity": null,
+        "location": null,
+        "onset": null,
+        "character": null,
+        "aggravating_factors": [],
+        "relieving_factors": [],
+        "associated_symptoms": [],
+        "icd_codes": []
+      },
+      {
+        "description": "racing of the heart",
+        "duration": null,
+        "severity": null,
+        "location": null,
+        "onset": null,
+        "character": null,
+        "aggravating_factors": [],
+        "relieving_factors": [],
+        "associated_symptoms": [],
+        "icd_codes": [
+          {
+            "code": "I253",
+            "title": "Aneurysm of heart",
+            "version": 10,
+            "score": 0.333
+          },
+          {
+            "code": "I455",
+            "title": "Other specified heart block",
+            "version": 10,
+            "score": 0.333
+          },
+          {
+            "code": "I5089",
+            "title": "Other heart failure",
+            "version": 10,
+            "score": 0.333
+          }
+        ]
+      },
+      {
+        "description": "neck seems to be a little swollen",
+        "duration": null,
+        "severity": null,
+        "location": "neck",
+        "onset": null,
+        "character": null,
+        "aggravating_factors": [],
+        "relieving_factors": [],
+        "associated_symptoms": [],
+        "icd_codes": []
+      }
+    ],
+    "diagnoses": [],
+    "medications": [],
+    "allergies": [],
+    "lab_results": [],
+    "procedures": [],
+    "medical_history": [],
+    "family_history": [
+      {
+        "relation": "father",
+        "condition": "heart attack",
+        "age_at_onset": "45",
+        "deceased": null,
+        "notes": null
+      },
+      {
+        "relation": "father",
+        "condition": "cholesterol problems",
+        "age_at_onset": null,
+        "deceased": null,
+        "notes": null
+      }
+    ],
+    "social_history": {
+      "smoking": "about a pack a day for the past 10 to 15 years",
+      "alcohol": "about one or two drinks a day, about 10 drinks a week",
+      "cannabis": "sometimes, about five milligrams per week",
+      "other_drugs": "no",
+      "occupation": "count in",
+      "exercise": "try to exercise every other day, run for about half an hour",
+      "living_situation": "live in an apartment by myself",
+      "marital_status": null,
+      "sexual_history": null,
+      "diet": "try to eat healthy for dinner at least, but most of my lunches are I eat out",
+      "education": null,
+      "travel_history": null
+    }
+  }
+}

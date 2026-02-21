@@ -1,0 +1,4 @@
+Fastapi_backend/venv/
+Fastapi_backend/__pycache__/
+.env
+Modal/_pycache__/

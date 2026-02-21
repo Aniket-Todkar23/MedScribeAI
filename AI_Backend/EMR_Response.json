@@ -1,0 +1,171 @@
+{
+  "emr_record": {
+    "record_id": "8bcd5f7b-0e00-428b-a0d7-56475b1b3658",
+    "fhir_version": "R4",
+    "status": "draft",
+    "created_at": "2026-02-21T17:32:58.638752",
+    "updated_at": null,
+    "patient": {
+      "patient_id": "P001",
+      "mrn": null,
+      "name": null,
+      "date_of_birth": null,
+      "age": null,
+      "gender": null,
+      "race": null,
+      "ethnicity": null,
+      "preferred_language": null,
+      "contact": null,
+      "insurance": null,
+      "emergency_contact": null
+    },
+    "encounter": {
+      "encounter_id": "3430e17b-599c-42d8-bda7-8e9281c4ada5",
+      "encounter_type": "outpatient",
+      "encounter_date": "21-02-2026",
+      "start_time": null,
+      "end_time": null,
+      "reason_for_visit": "The patient presents with chest pain and shortness of breath.",
+      "provider": null,
+      "facility": null,
+      "referral_source": null
+    },
+    "vitals": [],
+    "symptoms": [
+      {
+        "description": "chest pain",
+        "duration": "approximately 8 hours",
+        "severity": "seven or eight",
+        "location": "left side of chest",
+        "onset": "last night",
+        "character": "sharp",
+        "aggravating_factors": [
+          "lying down",
+          "taking a deep breath"
+        ],
+        "relieving_factors": [
+          "not lying down"
+        ],
+        "associated_symptoms": [],
+        "icd_codes": []
+      },
+      {
+        "description": "trouble breathing",
+        "duration": "since the pain started",
+        "severity": null,
+        "location": null,
+        "onset": "since pain started",
+        "character": null,
+        "aggravating_factors": [],
+        "relieving_factors": [],
+        "associated_symptoms": [],
+        "icd_codes": []
+      },
+      {
+        "description": "lightheaded",
+        "duration": null,
+        "severity": null,
+        "location": null,
+        "onset": null,
+        "character": null,
+        "aggravating_factors": [],
+        "relieving_factors": [],
+        "associated_symptoms": [],
+        "icd_codes": []
+      },
+      {
+        "description": "racing of the heart",
+        "duration": null,
+        "severity": null,
+        "location": null,
+        "onset": null,
+        "character": null,
+        "aggravating_factors": [],
+        "relieving_factors": [],
+        "associated_symptoms": [],
+        "icd_codes": []
+      },
+      {
+        "description": "neck swelling",
+        "duration": null,
+        "severity": null,
+        "location": "neck",
+        "onset": null,
+        "character": null,
+        "aggravating_factors": [],
+        "relieving_factors": [],
+        "associated_symptoms": [],
+        "icd_codes": []
+      }
+    ],
+    "diagnoses": [],
+    "medications": [],
+    "allergies": [],
+    "lab_results": [],
+    "procedures": [],
+    "medical_history": [],
+    "surgical_history": [],
+    "family_history": [
+      {
+        "relation": "father",
+        "condition": "heart attack",
+        "age_at_onset": "45",
+        "deceased": null,
+        "notes": null
+      },
+      {
+        "relation": "father",
+        "condition": "cholesterol problems",
+        "age_at_onset": null,
+        "deceased": null,
+        "notes": null
+      }
+    ],
+    "social_history": {
+      "smoking": "about a pack a day for the past 10 to 15 years",
+      "alcohol": "about one or two drinks a day (≈10 drinks/week)",
+      "cannabis": null,
+      "other_drugs": null,
+      "occupation": "unspecified",
+      "exercise": "tries to exercise every other day, runs for about half an hour",
+      "living_situation": null,
+      "marital_status": null,
+      "sexual_history": null,
+      "diet": null,
+      "education": null,
+      "travel_history": null
+    },
+    "immunization_status": null,
+    "narratives": {
+      "chief_complaint": "The patient presents with chest pain and shortness of breath.",
+      "history_of_present_illness": "The patient reports experiencing sharp chest pain on the left side of his chest for approximately 8 hours, starting last night. The pain is rated as a seven or eight out of ten in severity. It is aggravated by lying down and taking deep breaths, and relieved by not lying down. Associated symptoms include trouble breathing, feeling lightheaded, and experiencing a racing heart. He also notes neck swelling.",
+      "review_of_systems": {
+        "constitutional": null,
+        "eyes": null,
+        "ent": null,
+        "cardiovascular": "Reports chest pain, racing heart, lightheadedness.",
+        "respiratory": "Reports trouble breathing.",
+        "gastrointestinal": null,
+        "genitourinary": null,
+        "musculoskeletal": null,
+        "integumentary": null,
+        "neurological": null,
+        "psychiatric": null,
+        "endocrine": null,
+        "hematologic": null,
+        "immunologic": null
+      },
+      "physical_examination": null,
+      "assessment": "Patient is a smoker with a family history of early heart attack and cholesterol problems presenting with acute onset left-sided sharp chest pain, shortness of breath, lightheadedness, palpitations, and neck swelling. The pain characteristics (sharp, pleuritic, positional) raise concern for potential cardiac, pulmonary, or other etiologies. Given the severity and associated symptoms, further evaluation is warranted.",
+      "plan": "1. Obtain an EKG to evaluate for cardiac ischemia or arrhythmia.\n2. Order cardiac enzymes (troponin) to rule out myocardial infarction.\n3. Obtain a chest X-ray to evaluate for pulmonary causes (e.g., pneumothorax, pneumonia, effusion) or mediastinal widening.\n4. Administer oxygen if hypoxic.\n5. Consider D-dimer if pulmonary embolism is suspected based on risk factors and clinical presentation.\n6. Initiate cardiac monitoring.",
+      "patient_instructions": "We need to run some tests to figure out what is causing your chest pain and shortness of breath. This will include an EKG, blood tests, and a chest X-ray. Please let the nursing staff know if your pain changes or worsens.",
+      "follow_up": "Follow up will depend on the results of the initial workup. We will discuss the findings and next steps once the tests are completed."
+    },
+    "icd10_codes": [],
+    "cpt_codes": [],
+    "audio_duration_seconds": 625.42,
+    "transcript_char_count": 5305,
+    "total_dialogue_turns": 0,
+    "processing_notes": []
+  }
+}
