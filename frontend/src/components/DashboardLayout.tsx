@@ -38,7 +38,7 @@ const DashboardLayout = ({
   const [rightOpen, setRightOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [chatMessages, setChatMessages] = useState<{ role: "user" | "assistant"; text: string }[]>([
-    { role: "assistant", text: "Hello! I'm your AI-NETRA assistant. How can I help you today?" },
+    { role: "assistant", text: "Hello! I'm your Diagnostic-IQ assistant. How can I help you today?" },
   ]);
   const [chatInput, setChatInput] = useState("");
 
@@ -65,7 +65,7 @@ const DashboardLayout = ({
       <aside className="hidden w-64 flex-shrink-0 border-r border-border bg-card lg:flex lg:flex-col">
         <div className="flex h-14 items-center gap-2 border-b border-border px-5">
           <Activity className="h-5 w-5 text-primary" />
-          <span className="font-bold text-foreground">AI-NETRA</span>
+          <span className="font-bold text-foreground">Diagnostic-IQ</span>
           <span className={`ml-auto rounded-full px-2 py-0.5 text-xs font-medium ${roleBadge.className}`}>
             {roleBadge.label}
           </span>
@@ -100,7 +100,7 @@ const DashboardLayout = ({
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
           <Activity className="h-5 w-5 text-primary" />
-          <span className="font-bold text-foreground">AI-NETRA</span>
+          <span className="font-bold text-foreground">Diagnostic-IQ</span>
         </div>
         <button onClick={() => setRightOpen(!rightOpen)} className="rounded-lg p-2 text-muted-foreground hover:text-foreground">
           <MessageCircle className="h-5 w-5" />

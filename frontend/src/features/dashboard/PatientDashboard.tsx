@@ -45,7 +45,7 @@ const PatientDashboard = () => {
       >
         <div className="flex items-center gap-2" style={{ padding: 'var(--space-4) var(--space-5)', borderBottom: '1px solid var(--color-border)' }}>
           <Activity size={24} color="var(--color-primary)" />
-          <span className="font-bold" style={{ fontSize: 'var(--text-h4)' }}>AI-NETRA</span>
+          <span className="font-bold" style={{ fontSize: 'var(--text-h4)' }}>Diagnostic-IQ</span>
           <span className="badge badge-blue mt-auto mb-auto" style={{ marginLeft: 'auto' }}>Patient</span>
         </div>
         
@@ -127,8 +127,8 @@ const PatientDashboard = () => {
             <h2 style={{ marginBottom: 'var(--space-6)' }}>Reports</h2>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               {[
-                { date: "Feb 15, 2026", doctor: "Dr. Smith", summary: "Routine check-up — Blood pressure normal, sugar slightly elevated", symptoms: "Fatigue, headache" },
-                { date: "Jan 28, 2026", doctor: "Dr. Smith", summary: "Follow-up — Medication adjusted for diabetes", symptoms: "Dizziness, thirst" },
+                { date: "Feb 15, 2026", doctor: "Dr. Hambire", summary: "Routine check-up — Blood pressure normal, sugar slightly elevated", symptoms: "Fatigue, headache" },
+                { date: "Jan 28, 2026", doctor: "Dr. Hambire", summary: "Follow-up — Medication adjusted for diabetes", symptoms: "Dizziness, thirst" },
                 { date: "Jan 10, 2026", doctor: "Dr. Gupta", summary: "Initial consultation — Diagnosed with Type 2 Diabetes", symptoms: "Frequent urination, weight loss" },
               ].map((report) => (
                 <div key={report.date} className="card card-body">
@@ -212,7 +212,7 @@ const PatientDashboard = () => {
             
             <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-4)' }}>
               {[
-                { date: "Feb 24, 2026", time: "10:00 AM", doctor: "Dr. Smith", type: "Follow-up", status: "Confirmed" },
+                { date: "Feb 24, 2026", time: "10:00 AM", doctor: "Dr. Hambire", type: "Follow-up", status: "Confirmed" },
                 { date: "Mar 10, 2026", time: "2:30 PM", doctor: "Dr. Gupta", type: "Lab Review", status: "Pending" },
               ].map((apt) => (
                 <div key={apt.date} className="card card-body flex flex-between items-center">

@@ -12,6 +12,21 @@ export const useAuth = () => {
   const [error, setError] = useState<string | null>(null);
   const isMounted = useRef(true);
 
+  // Restore user from localStorage on mount
+  useEffect(() => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    const storedUser = localStorage.getItem('user');
+    if (token && storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (err) {
+        console.error('Failed to parse stored user:', err);
+        localStorage.removeItem('user');
+        localStorage.removeItem(TOKEN_KEY);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     return () => { isMounted.current = false; };
   }, []);
@@ -22,6 +37,7 @@ export const useAuth = () => {
     try {
       const { token, user } = await authService.login(payload);
       localStorage.setItem(TOKEN_KEY, token);
+      localStorage.setItem('user', JSON.stringify(user));
       if (isMounted.current) setUser(user);
       return true;
     } catch (err) {
@@ -41,6 +57,7 @@ export const useAuth = () => {
     try {
       const { token, user } = await authService.signup(payload);
       localStorage.setItem(TOKEN_KEY, token);
+      localStorage.setItem('user', JSON.stringify(user));
       if (isMounted.current) setUser(user);
       return true;
     } catch (err) {
@@ -56,6 +73,8 @@ export const useAuth = () => {
 
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem('user');
+    localStorage.removeItem('needs_onboarding');
     setUser(null);
   }, []);
 
