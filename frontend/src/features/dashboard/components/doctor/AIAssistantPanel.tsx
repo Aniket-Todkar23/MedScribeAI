@@ -8,6 +8,8 @@ import type { ChatMessage } from "./types";
 interface AIAssistantPanelProps {
   aiPanelCollapsed: boolean;
   setAiPanelCollapsed: (v: boolean) => void;
+  isMobile?: boolean;
+  isOpen?: boolean;
 }
 
 const initialMessages: ChatMessage[] = [
@@ -16,7 +18,12 @@ const initialMessages: ChatMessage[] = [
   { role: 'assistant', text: 'Based on the latest records:\n• BP: 138/88 mmHg (slightly elevated)\n• Weight: 185 lbs\n• BMI: 26.5 (overweight)\n• Temp: 98.4°F (normal)\n• O₂: 97% (normal)\n\nI recommend monitoring the blood pressure closely.', time: '10:31 AM' }
 ];
 
-const AIAssistantPanel = ({ aiPanelCollapsed, setAiPanelCollapsed }: AIAssistantPanelProps) => {
+const AIAssistantPanel = ({ 
+  aiPanelCollapsed, 
+  setAiPanelCollapsed,
+  isMobile = false,
+  isOpen = false
+}: AIAssistantPanelProps) => {
   const [chatTab, setChatTab] = useState<'chat' | 'insights' | 'alerts'>('chat');
   const [chatInput, setChatInput] = useState('');
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(initialMessages);
@@ -34,6 +41,17 @@ const AIAssistantPanel = ({ aiPanelCollapsed, setAiPanelCollapsed }: AIAssistant
     }, 1000);
   };
 
+  const mobileStyles = isMobile ? {
+    position: 'fixed' as const,
+    right: isOpen ? 0 : '-100%',
+    top: '56px', // Below header
+    bottom: 0,
+    width: '320px',
+    zIndex: 50,
+    boxShadow: '-4px 0 24px rgba(0,0,0,0.12)',
+    transition: 'right 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+  } : {};
+
   return (
     <aside 
       style={{
@@ -41,9 +59,10 @@ const AIAssistantPanel = ({ aiPanelCollapsed, setAiPanelCollapsed }: AIAssistant
         borderLeft: '1px solid rgba(31,159,163,0.12)',
         display: 'flex',
         flexDirection: 'column',
-        position: 'relative',
-        overflow: 'hidden',
-        transition: 'all var(--transition)'
+        height: '100%',
+        width: isMobile ? '320px' : (aiPanelCollapsed ? '60px' : '320px'),
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        ...mobileStyles
       }}
     >
       {!aiPanelCollapsed && (

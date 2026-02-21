@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
+import { ChevronLeft } from "lucide-react";
+import { useIsMobile } from "../../hooks/useMediaQuery";
 import {
   DoctorHeader,
   DoctorSidebar,
@@ -17,11 +19,28 @@ import type { DoctorTabId } from "./components/doctor";
 const DoctorDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [aiPanelCollapsed, setAiPanelCollapsed] = useState(false);
+  
+  // Mobile states
+  const isMobile = useIsMobile();
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [mobileAiPanelOpen, setMobileAiPanelOpen] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [patientFound, setPatientFound] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [activeTab, setActiveTab] = useState<DoctorTabId>("analytics");
+
+  const handleSetActiveTab = (tab: DoctorTabId) => {
+    setActiveTab(tab);
+    if (tab !== 'search') {
+      setPatientFound(false);
+      setSearchQuery("");
+      setTranscript("");
+      setIsRecording(false);
+    }
+    if (isMobile) setMobileSidebarOpen(false);
+  };
 
   const handleSearch = () => {
     if (searchQuery.trim() === "+1234567890" || searchQuery.trim() === "1234567890") {
@@ -59,7 +78,9 @@ const DoctorDashboard = () => {
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: `${sidebarCollapsed ? "60px" : "260px"} 1fr ${aiPanelCollapsed ? "60px" : "320px"}`,
+        gridTemplateColumns: isMobile
+          ? "1fr"
+          : `${sidebarCollapsed ? "60px" : "260px"} 1fr ${aiPanelCollapsed ? "60px" : "320px"}`,
         gridTemplateRows: "auto 1fr",
         height: "100vh",
         backgroundColor: "var(--color-surface)",
@@ -74,23 +95,40 @@ const DoctorDashboard = () => {
         aiPanelCollapsed={aiPanelCollapsed}
         setAiPanelCollapsed={setAiPanelCollapsed}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleSetActiveTab}
         patientFound={patientFound}
+        isMobile={isMobile}
+        mobileSidebarOpen={mobileSidebarOpen}
+        setMobileSidebarOpen={setMobileSidebarOpen}
+        mobileAiPanelOpen={mobileAiPanelOpen}
+        setMobileAiPanelOpen={setMobileAiPanelOpen}
       />
 
-      {/* Left sidebar */}
+      {/* Left sidebar - Mobile Overlay */}
+      {isMobile && mobileSidebarOpen && (
+        <div 
+          onClick={() => setMobileSidebarOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.3)', zIndex: 40, backdropFilter: 'blur(2px)'
+          }}
+        />
+      )}
       <DoctorSidebar
-        sidebarCollapsed={sidebarCollapsed}
+        sidebarCollapsed={isMobile ? false : sidebarCollapsed}
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleSetActiveTab}
+        isMobile={isMobile}
+        isOpen={mobileSidebarOpen}
       />
 
       {/* Main content area */}
       <main
         style={{
-          padding: "28px 32px",
+          padding: isMobile ? "16px 12px" : "28px 32px",
           overflowY: "auto",
           backgroundColor: "var(--color-surface)",
+          position: "relative",
+          zIndex: 1
         }}
       >
         {/* Prescription tab */}
@@ -111,6 +149,17 @@ const DoctorDashboard = () => {
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             onSearch={handleSearch}
+            showBack={patientFound || activeTab === "search"}
+            onBack={() => {
+              if (patientFound) {
+                setPatientFound(false);
+                setSearchQuery("");
+                setTranscript("");
+                setIsRecording(false);
+              } else if (activeTab === "search") {
+                setActiveTab("analytics");
+              }
+            }}
           />
         )}
 
@@ -124,7 +173,7 @@ const DoctorDashboard = () => {
                 transition={{ duration: 0.5 }}
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
+                  gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
                   gap: "20px",
                   marginTop: "20px",
                 }}
@@ -132,10 +181,10 @@ const DoctorDashboard = () => {
                 <PatientRecords
                   patient={examplePatient}
                   onBack={() => {
-                    setPatientFound(false);
-                    setSearchQuery("");
-                    setTranscript("");
-                    setIsRecording(false);
+                   setPatientFound(false);
+                   setSearchQuery("");
+                   setTranscript("");
+                   setIsRecording(false);
                   }}
                 />
                 <LiveTranscription
@@ -167,12 +216,32 @@ const DoctorDashboard = () => {
                     autoplay
                     style={{ width: 220, height: 220, marginBottom: 10 }}
                   />
-                  <h3 style={{ color: "#0B3C3D", fontSize: "18px", fontWeight: 700, marginBottom: "6px" }}>
+                  <h3 style={{ color: "#0B3C3D", fontSize: "18px", fontWeight: 700, marginBottom: "6px", textAlign: "center" }}>
                     Search for a patient
                   </h3>
-                  <p style={{ color: "#64748B", fontSize: "13px" }}>
+                  <p style={{ color: "#64748B", fontSize: "13px", textAlign: "center", marginBottom: "20px" }}>
                     Enter a phone number above to view patient records
                   </p>
+                  
+                  <button
+                    onClick={() => setActiveTab("analytics")}
+                    style={{
+                      display: "flex", alignItems: "center", gap: "6px",
+                      padding: "8px 16px", borderRadius: "10px",
+                      border: "1px solid rgba(31,159,163,0.15)",
+                      backgroundColor: "rgba(31,159,163,0.06)",
+                      color: "#1F9FA3", fontSize: "13px", fontWeight: 600,
+                      cursor: "pointer", transition: "all 0.2s"
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(31,159,163,0.12)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(31,159,163,0.06)";
+                    }}
+                  >
+                    <ChevronLeft size={16} /> Back to Dashboard
+                  </button>
                 </motion.div>
               )
             )}
@@ -180,10 +249,20 @@ const DoctorDashboard = () => {
         )}
       </main>
 
-      {/* AI assistant panel */}
+      {/* AI assistant panel - Mobile Overlay */}
+      {isMobile && mobileAiPanelOpen && (
+        <div 
+          onClick={() => setMobileAiPanelOpen(false)}
+          style={{
+            position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.3)', zIndex: 40, backdropFilter: 'blur(2px)'
+          }}
+        />
+      )}
       <AIAssistantPanel
-        aiPanelCollapsed={aiPanelCollapsed}
+        aiPanelCollapsed={isMobile ? false : aiPanelCollapsed}
         setAiPanelCollapsed={setAiPanelCollapsed}
+        isMobile={isMobile}
+        isOpen={mobileAiPanelOpen}
       />
     </div>
   );

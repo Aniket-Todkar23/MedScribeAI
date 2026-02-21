@@ -7,3 +7,9 @@ export interface PatientTab {
   label: string;
   icon: LucideIcon;
 }
+
+export interface ChatMessage {
+  role: "user" | "assistant";
+  text: string;
+  time: string;
+}

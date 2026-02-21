@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import {
   Mic, MicOff, FileText, TrendingUp, Stethoscope, Users
 } from "lucide-react";
+import { useIsMobile } from "../../../../hooks/useMediaQuery";
 
 interface LiveTranscriptionProps {
   isRecording: boolean;
@@ -10,9 +11,11 @@ interface LiveTranscriptionProps {
 }
 
 const LiveTranscription = ({ isRecording, transcript, onToggleRecording }: LiveTranscriptionProps) => {
+  const isMobile = useIsMobile();
+  
   return (
     <div style={{
-      display: 'flex', flexDirection: 'column', maxHeight: '650px',
+      display: 'flex', flexDirection: 'column', maxHeight: isMobile ? '400px' : '650px',
       borderRadius: '16px', overflow: 'hidden',
       backgroundColor: 'white',
       border: '1px solid rgba(0,0,0,0.04)',
@@ -20,7 +23,7 @@ const LiveTranscription = ({ isRecording, transcript, onToggleRecording }: LiveT
     }}>
       {/* Transcription Header */}
       <div style={{
-        padding: '16px 20px',
+        padding: isMobile ? '12px 14px' : '16px 20px',
         background: isRecording
           ? 'linear-gradient(135deg, #DC2626 0%, #EF4444 100%)'
           : 'linear-gradient(135deg, #0B3C3D 0%, #1F9FA3 100%)',

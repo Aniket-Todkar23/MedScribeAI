@@ -2,25 +2,29 @@ import {
   Heart, AlertTriangle, FileText, Activity, ScrollText,
   ChevronLeft
 } from "lucide-react";
+import { useIsMobile } from "../../../../hooks/useMediaQuery";
 import type { ExamplePatient } from "./types";
 
 interface PatientRecordsProps {
   patient: ExamplePatient;
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 const PatientRecords = ({ patient, onBack }: PatientRecordsProps) => {
+  const isMobile = useIsMobile();
+  
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', overflow: 'hidden',
-      maxHeight: '650px', borderRadius: '16px',
+      maxHeight: isMobile ? 'none' : '650px',
+      borderRadius: '16px',
       backgroundColor: 'white',
       border: '1px solid rgba(0,0,0,0.04)',
       boxShadow: '0 1px 4px rgba(0,0,0,0.03)'
     }}>
       {/* Patient Header Card */}
       <div style={{
-        padding: '18px 22px',
+        padding: isMobile ? '16px' : '18px 22px',
         background: 'linear-gradient(135deg, #0B3C3D 0%, #1F9FA3 100%)',
         position: 'relative', overflow: 'hidden'
       }}>
@@ -28,59 +32,61 @@ const PatientRecords = ({ patient, onBack }: PatientRecordsProps) => {
         <div style={{ position: 'absolute', top: '-20px', right: '-20px', width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.05)' }} />
         <div style={{ position: 'absolute', bottom: '-30px', right: '40px', width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.03)' }} />
         
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-          <div style={{ flex: 1 }}>
-            <button 
-              onClick={onBack}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '5px',
-                padding: '4px 10px', borderRadius: '8px', marginBottom: '12px',
-                border: '1px solid rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.1)',
-                color: 'white', fontSize: '11px', fontWeight: 600,
-                cursor: 'pointer', transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.2)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.1)'; }}
-            >
-              <ChevronLeft size={14} /> Back
-            </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              {/* Avatar */}
-              <div style={{
-                width: '44px', height: '44px', borderRadius: '12px',
-                background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '17px', fontWeight: 700, color: 'white',
-                border: '1.5px solid rgba(255,255,255,0.2)'
-              }}>
-                {patient.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
-              </div>
-              <div>
-                <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'white', margin: 0, letterSpacing: '-0.3px' }}>
-                  {patient.full_name}
-                </h3>
-                <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', margin: '3px 0 0', fontWeight: 500 }}>
-                  {patient.phone} · {patient.gender}, {patient.age} yrs
-                </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+            <div style={{ flex: 1 }}>
+              {onBack && (
+                <button 
+                  onClick={onBack}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '5px',
+                    padding: '4px 10px', borderRadius: '8px', marginBottom: '12px',
+                    border: '1px solid rgba(255,255,255,0.2)', backgroundColor: 'rgba(255,255,255,0.1)',
+                    color: 'white', fontSize: '11px', fontWeight: 600,
+                    cursor: 'pointer', transition: 'all 0.2s'
+                  }}
+                >
+                  <ChevronLeft size={14} /> Back
+                </button>
+              )}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {/* Avatar */}
+                <div style={{
+                  width: '44px', height: '44px', borderRadius: '12px',
+                  background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '17px', fontWeight: 700, color: 'white',
+                  border: '1.5px solid rgba(255,255,255,0.2)'
+                }}>
+                  {patient.full_name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                </div>
+                <div>
+                  <h3 style={{ fontSize: '17px', fontWeight: 700, color: 'white', margin: 0, letterSpacing: '-0.3px' }}>
+                    {patient.full_name}
+                  </h3>
+                  <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)', margin: '3px 0 0', fontWeight: 500 }}>
+                    {patient.phone} · {patient.gender}, {patient.age} yrs
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
-            <span style={{
-              fontSize: '10px', fontWeight: 700, padding: '3px 10px', borderRadius: '8px',
-              backgroundColor: 'rgba(34,197,94,0.2)', color: '#86EFAC',
-              letterSpacing: '0.5px', textTransform: 'uppercase'
-            }}>Active</span>
-            <span style={{
-              fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '8px',
-              backgroundColor: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)'
-            }}>Blood: {patient.blood_group}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
+              <span style={{
+                fontSize: '10px', fontWeight: 700, padding: '3px 10px', borderRadius: '8px',
+                backgroundColor: 'rgba(34,197,94,0.2)', color: '#86EFAC',
+                letterSpacing: '0.5px', textTransform: 'uppercase'
+              }}>Active</span>
+              <span style={{
+                fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '8px',
+                backgroundColor: 'rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.85)'
+              }}>Blood: {patient.blood_group}</span>
+            </div>
           </div>
         </div>
       </div>
       
       {/* Scrollable Content */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '16px 18px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '14px' : '16px 18px' }}>
         {/* ── Vitals Grid ── */}
         <div style={{ marginBottom: '16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
@@ -90,7 +96,11 @@ const PatientRecords = ({ patient, onBack }: PatientRecordsProps) => {
             <h4 style={{ fontSize: '12px', fontWeight: 700, color: '#0B3C3D', margin: 0, textTransform: 'uppercase', letterSpacing: '0.4px' }}>Current Vitals</h4>
             <span style={{ fontSize: '9.5px', color: '#94A3B8', fontWeight: 500, marginLeft: 'auto' }}>{patient.vitals.recorded_at}</span>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px' }}>
+          <div style={{ 
+            display: 'grid', 
+            gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(5, 1fr)', 
+            gap: '8px' 
+          }}>
             {[
               { label: 'BP', value: patient.vitals.blood_pressure, color: '#EF4444', bg: 'rgba(239,68,68,0.04)' },
               { label: 'Weight', value: patient.vitals.weight, color: '#6366F1', bg: 'rgba(99,102,241,0.04)' },

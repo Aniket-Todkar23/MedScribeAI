@@ -1,29 +1,81 @@
-import React, { useState } from "react";
-import { Heart, FileText, Pill, Calendar, MessageCircle } from "lucide-react";
-import type { PatientTab, PatientTabId } from "./components/types";
+import { useState } from "react";
+import type { PatientTabId } from "./components/types";
+import PatientHeader from "./components/PatientHeader";
 import PatientSidebar from "./components/PatientSidebar";
 import HealthStatusTab from "./components/HealthStatusTab";
 import ReportsTab from "./components/ReportsTab";
 import MedicationsTab from "./components/MedicationsTab";
 import AppointmentsTab from "./components/AppointmentsTab";
 import AIChatTab from "./components/AIChatTab";
+import { useIsMobile } from "../../hooks/useMediaQuery";
 
-const tabs: PatientTab[] = [
-  { id: "health", label: "Health Status", icon: Heart },
-  { id: "reports", label: "Reports", icon: FileText },
-  { id: "medications", label: "Medications", icon: Pill },
-  { id: "appointments", label: "Appointments", icon: Calendar },
-  { id: "chat", label: "AI Chat", icon: MessageCircle },
-];
-
-const PatientDashboard: React.FC = () => {
+const PatientDashboard = () => {
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // mobile overlay
   const [activeTab, setActiveTab] = useState<PatientTabId>("health");
+  const isMobile = useIsMobile();
+
+  const handleSetActiveTab = (tab: PatientTabId) => {
+    setActiveTab(tab);
+    if (isMobile) setSidebarOpen(false); // auto-close sidebar on mobile
+  };
 
   return (
-    <div className="flex" style={{ minHeight: "100vh", backgroundColor: "var(--color-surface)" }}>
-      <PatientSidebar tabs={tabs} activeTab={activeTab} onTabChange={setActiveTab} />
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: isMobile ? "1fr" : `${sidebarCollapsed ? "60px" : "260px"} 1fr`,
+        gridTemplateRows: "auto 1fr",
+        height: "100vh",
+        backgroundColor: "var(--color-surface)",
+        transition: "grid-template-columns 0.3s cubic-bezier(0.4,0,0.2,1)",
+        overflow: "hidden",
+      }}
+    >
+      {/* Header */}
+      <PatientHeader
+        sidebarCollapsed={sidebarCollapsed}
+        setSidebarCollapsed={setSidebarCollapsed}
+        activeTab={activeTab}
+        setActiveTab={handleSetActiveTab}
+        isMobile={isMobile}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+      />
 
-      <main style={{ flex: 1, padding: "var(--space-8) var(--content-padding)", overflowY: "auto" }}>
+      {/* Left sidebar — overlay on mobile */}
+      {isMobile && sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.35)",
+            zIndex: 40,
+            backdropFilter: "blur(2px)",
+            transition: "opacity 0.25s ease",
+          }}
+        />
+      )}
+      <PatientSidebar
+        sidebarCollapsed={isMobile ? false : sidebarCollapsed}
+        activeTab={activeTab}
+        setActiveTab={handleSetActiveTab}
+        isMobile={isMobile}
+        sidebarOpen={sidebarOpen}
+      />
+
+      {/* Main content area */}
+      <main
+        style={{
+          padding: activeTab === "chat" ? 0 : isMobile ? "16px 12px" : "28px 32px",
+          overflowY: activeTab === "chat" ? "hidden" : "auto",
+          backgroundColor: "var(--color-surface)",
+          display: activeTab === "chat" ? "flex" : "block",
+          flexDirection: "column",
+          height: "100%",
+        }}
+      >
         {activeTab === "health" && <HealthStatusTab />}
         {activeTab === "reports" && <ReportsTab />}
         {activeTab === "medications" && <MedicationsTab />}

@@ -4,6 +4,7 @@ import {
   ChevronLeft, Users, FileText, Printer, ScrollText,
   RotateCcw, Save, Plus, ClipboardList, AlertTriangle, Copy, Check, Trash2
 } from "lucide-react";
+import { useIsMobile } from "../../../../hooks/useMediaQuery";
 import type { DoctorTabId, PrescriptionData, ExamplePatient } from "./types";
 
 interface PrescriptionTabProps {
@@ -13,6 +14,7 @@ interface PrescriptionTabProps {
 }
 
 const PrescriptionTab = ({ setActiveTab, patientFound, patient }: PrescriptionTabProps) => {
+  const isMobile = useIsMobile();
   const [prescriptionData, setPrescriptionData] = useState<PrescriptionData>({
     patientName: patientFound ? patient.full_name : '',
     date: new Date().toISOString().split('T')[0],
@@ -66,7 +68,8 @@ const PrescriptionTab = ({ setActiveTab, patientFound, patient }: PrescriptionTa
     <section id="prescription-form">
       {/* Header toolbar */}
       <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', justifyContent: 'space-between',
+        flexDirection: isMobile ? 'column' : 'row',
         marginBottom: '16px', flexWrap: 'wrap', gap: '10px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -79,8 +82,6 @@ const PrescriptionTab = ({ setActiveTab, patientFound, patient }: PrescriptionTa
               color: '#1F9FA3', fontSize: '13px', fontWeight: 600,
               cursor: 'pointer', transition: 'all 0.2s ease'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(31,159,163,0.06)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'white'; }}
           >
             <ChevronLeft size={16} /> Back
           </button>
@@ -89,7 +90,7 @@ const PrescriptionTab = ({ setActiveTab, patientFound, patient }: PrescriptionTa
             <p style={{ fontSize: '11px', color: '#94A3B8', margin: '1px 0 0', fontWeight: 500 }}>Fill out all required fields</p>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', width: isMobile ? '100%' : 'auto' }}>
           <button
             onClick={clearPrescriptionForm}
             style={{
@@ -97,12 +98,11 @@ const PrescriptionTab = ({ setActiveTab, patientFound, patient }: PrescriptionTa
               padding: '8px 14px', borderRadius: '10px',
               border: '1px solid rgba(239,68,68,0.2)', backgroundColor: 'white',
               color: '#EF4444', fontSize: '12px', fontWeight: 600,
-              cursor: 'pointer', transition: 'all 0.2s ease'
+              cursor: 'pointer', transition: 'all 0.2s ease',
+              flex: isMobile ? 1 : 'unset', justifyContent: 'center'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.04)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'white'; }}
           >
-            <RotateCcw size={14} /> Clear Form
+            <RotateCcw size={14} /> Clear
           </button>
           <button
             onClick={handleSavePrescription}
@@ -113,12 +113,11 @@ const PrescriptionTab = ({ setActiveTab, patientFound, patient }: PrescriptionTa
               backgroundColor: rxSaved ? 'rgba(34,197,94,0.08)' : 'white',
               color: rxSaved ? '#16A34A' : '#1F9FA3',
               fontSize: '12px', fontWeight: 600,
-              cursor: 'pointer', transition: 'all 0.2s ease'
+              cursor: 'pointer', transition: 'all 0.2s ease',
+              flex: isMobile ? 1 : 'unset', justifyContent: 'center'
             }}
-            onMouseEnter={(e) => { if (!rxSaved) e.currentTarget.style.backgroundColor = 'rgba(31,159,163,0.06)'; }}
-            onMouseLeave={(e) => { if (!rxSaved) e.currentTarget.style.backgroundColor = 'white'; }}
           >
-            {rxSaved ? <><Check size={14} /> Saved!</> : <><Save size={14} /> Save Draft</>}
+            {rxSaved ? <><Check size={14} /> Saved!</> : <><Save size={14} /> Save</>}
           </button>
           <button
             onClick={handlePrintPrescription}
@@ -129,10 +128,9 @@ const PrescriptionTab = ({ setActiveTab, patientFound, patient }: PrescriptionTa
               background: 'linear-gradient(135deg, #1F9FA3, #17858A)',
               color: 'white', fontSize: '12px', fontWeight: 600,
               cursor: 'pointer', transition: 'all 0.2s ease',
-              boxShadow: '0 2px 8px rgba(31,159,163,0.25)'
+              boxShadow: '0 2px 8px rgba(31,159,163,0.25)',
+              flex: isMobile ? 1 : 'unset', justifyContent: 'center'
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.boxShadow = '0 4px 14px rgba(31,159,163,0.35)'; }}
-            onMouseLeave={(e) => { e.currentTarget.style.boxShadow = '0 2px 8px rgba(31,159,163,0.25)'; }}
           >
             <Printer size={14} /> Print
           </button>
@@ -151,7 +149,9 @@ const PrescriptionTab = ({ setActiveTab, patientFound, patient }: PrescriptionTa
         >
           <AlertTriangle size={16} color="#EF4444" />
           <span style={{ fontSize: '12px', color: '#991B1B', fontWeight: 500 }}>
-            Please fill in all required fields — Patient Name, Diagnosis, and Drug Name / Dosage / Frequency for every medication.
+            {isMobile 
+              ? "Please fill in all required fields marked with *" 
+              : "Please fill in all required fields — Patient Name, Diagnosis, and Drug Name / Dosage / Frequency for every medication."}
           </span>
         </motion.div>
       )}
@@ -165,7 +165,7 @@ const PrescriptionTab = ({ setActiveTab, patientFound, patient }: PrescriptionTa
       }}>
         {/* Card header */}
         <div style={{
-          padding: '18px 24px',
+          padding: isMobile ? '16px' : '18px 24px',
           background: 'linear-gradient(135deg, #0B3C3D 0%, #1F9FA3 100%)',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px'
         }}>
@@ -176,13 +176,13 @@ const PrescriptionTab = ({ setActiveTab, patientFound, patient }: PrescriptionTa
             </div>
             <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.75)', margin: 0 }}>Dr. Hambire · License: MD-2024-001</p>
           </div>
-          <div style={{ textAlign: 'right' }}>
+          <div style={{ textAlign: isMobile ? 'left' : 'right' }}>
             <p style={{ fontSize: '12px', color: 'rgba(255,255,255,0.85)', margin: 0 }}>Date: {prescriptionData.date}</p>
             <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', margin: '2px 0 0' }}>Healthcare City Medical Center</p>
           </div>
         </div>
 
-        <div style={{ padding: '24px' }}>
+        <div style={{ padding: isMobile ? '16px' : '24px' }}>
           {/* ── Patient Info Section ── */}
           <div style={{
             marginBottom: '20px', paddingBottom: '18px',
@@ -195,7 +195,7 @@ const PrescriptionTab = ({ setActiveTab, patientFound, patient }: PrescriptionTa
               <h4 style={{ fontSize: '13px', fontWeight: 650, color: '#0B3C3D', margin: 0 }}>Patient Information</h4>
               <span style={{ fontSize: '10px', color: '#EF4444', fontWeight: 600 }}>*Required</span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#64748B', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Patient Name *</label>
                 <input

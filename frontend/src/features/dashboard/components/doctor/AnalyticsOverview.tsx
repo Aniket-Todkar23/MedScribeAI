@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import { Users, Calendar, Stethoscope } from "lucide-react";
+import { useIsMobile, useIsTablet } from "../../../../hooks/useMediaQuery";
 import { diabetesData, heartDiseaseData, asthmaData, ageDistributionData } from "./types";
 
 const CustomTooltip = ({ active, payload }: any) => {
@@ -38,27 +39,52 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 const AnalyticsOverview = () => {
+  const isMobile = useIsMobile();
+  const isTablet = useIsTablet();
+
   return (
     <section>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+      <div style={{
+        display: 'flex',
+        alignItems: isMobile ? 'flex-start' : 'center',
+        justifyContent: 'space-between',
+        flexDirection: isMobile ? 'column' : 'row',
+        gap: isMobile ? '12px' : 0,
+        marginBottom: '20px'
+      }}>
         <div>
           <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#0B3C3D', margin: 0, letterSpacing: '-0.3px' }}>
             Patient Analytics
           </h2>
           <p style={{ fontSize: '12px', color: '#94A3B8', margin: '2px 0 0', fontWeight: 500 }}>Real-time overview of your practice</p>
         </div>
-        <div style={{
-          padding: '5px 12px', borderRadius: '20px',
-          backgroundColor: 'rgba(31,159,163,0.06)',
-          border: '1px solid rgba(31,159,163,0.12)',
-          fontSize: '11px', color: '#1F9FA3', fontWeight: 600
+        
+        {/* Date Filter & Actions */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '12px',
+          width: isMobile ? '100%' : 'auto',
+          justifyContent: isMobile ? 'space-between' : 'flex-end'
         }}>
-          Last 30 days
+          <div style={{
+            padding: '5px 12px', borderRadius: '20px',
+            backgroundColor: 'rgba(31,159,163,0.06)',
+            border: '1px solid rgba(31,159,163,0.12)',
+            fontSize: '11px', color: '#1F9FA3', fontWeight: 600
+          }}>
+            Last 30 days
+          </div>
         </div>
       </div>
       
       {/* ── Summary Metric Cards ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '16px' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: isMobile ? '1fr' : isTablet ? '1fr 1fr' : 'repeat(3, 1fr)', 
+        gap: '12px', 
+        marginBottom: '16px' 
+      }}>
         {[
           { label: 'Total Patients', value: '1,247', change: '+12%', icon: Users, accent: '#1F9FA3', bg: 'rgba(31,159,163,0.06)' },
           { label: 'Appointments', value: '24', change: '+15%', icon: Calendar, accent: '#6366F1', bg: 'rgba(99,102,241,0.06)' },
@@ -113,7 +139,11 @@ const AnalyticsOverview = () => {
       </div>
 
       {/* ── Chart Grid ── */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+      <div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: isMobile || isTablet ? '1fr' : 'repeat(2, 1fr)', 
+        gap: '12px' 
+      }}>
         {[
           { title: 'Diabetes', data: diabetesData, badge: `${diabetesData[0].value} cases`, badgeColor: '#D64545', delay: 0 },
           { title: 'Heart Disease', data: heartDiseaseData, badge: `${heartDiseaseData[0].value} cases`, badgeColor: '#F5A524', delay: 0.07 },

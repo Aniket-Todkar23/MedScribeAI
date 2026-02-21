@@ -1,55 +1,84 @@
 import {
   Search, FileText, Calendar, TrendingUp, Printer, ScrollText
 } from "lucide-react";
-import type { DoctorTabId } from "./types";
+
+export type DoctorTabId =
+  | "analytics"
+  | "search"
+  | "prescription"
+  | "appointments"
+  | "records"
+  | "audit-logs";
 
 interface DoctorSidebarProps {
   sidebarCollapsed: boolean;
   activeTab: DoctorTabId;
   setActiveTab: (tab: DoctorTabId) => void;
+  isMobile?: boolean;
+  isOpen?: boolean;
 }
 
-const navItems: { icon: typeof TrendingUp; label: string; id: DoctorTabId }[] = [
-  { icon: TrendingUp, label: "Analytics", id: "analytics" },
-  { icon: Search, label: "Search", id: "search" },
-  { icon: Printer, label: "Prescription", id: "prescription" },
-  { icon: Calendar, label: "Appointments", id: "appointments" },
-  { icon: FileText, label: "EMR Records", id: "records" },
-  { icon: ScrollText, label: "Audit Logs", id: "audit-logs" }
+const navItems = [
+  { icon: TrendingUp, label: "Analytics", id: "analytics" as DoctorTabId },
+  { icon: Search, label: "Search", id: "search" as DoctorTabId },
+  { icon: Printer, label: "Prescription", id: "prescription" as DoctorTabId },
+  { icon: Calendar, label: "Appointments", id: "appointments" as DoctorTabId },
+  { icon: FileText, label: "EMR Records", id: "records" as DoctorTabId },
+  { icon: ScrollText, label: "Audit Logs", id: "audit-logs" as DoctorTabId }
 ];
 
-const DoctorSidebar = ({ sidebarCollapsed, activeTab, setActiveTab }: DoctorSidebarProps) => {
+const DoctorSidebar = ({ 
+  sidebarCollapsed, 
+  activeTab, 
+  setActiveTab,
+  isMobile = false,
+  isOpen = false
+}: DoctorSidebarProps) => {
+
+  const sidebarWidth = sidebarCollapsed ? '64px' : '240px';
+  const mobileStyles = isMobile ? {
+    position: 'fixed' as const,
+    left: isOpen ? 0 : '-100%',
+    top: '56px', // Below header
+    bottom: 0,
+    width: '260px',
+    zIndex: 50,
+    boxShadow: '4px 0 24px rgba(0,0,0,0.12)',
+    transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+  } : {};
+
   return (
     <aside 
       style={{
-        backgroundColor: 'var(--color-white)',
-        borderRight: '1px solid var(--color-border)',
+        backgroundColor: 'white',
+        borderRight: '1px solid rgba(0,0,0,0.06)',
         display: 'flex',
         flexDirection: 'column',
-        position: 'relative',
-        overflow: 'hidden',
-        transition: 'all var(--transition)'
+        height: '100%',
+        width: isMobile ? '260px' : sidebarWidth,
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        ...mobileStyles
       }}
     >
       <nav style={{
         padding: sidebarCollapsed ? '12px 6px' : '14px 12px',
-        display: 'flex', flexDirection: 'column',
+        display: 'flex', 
+        flexDirection: 'column',
         gap: sidebarCollapsed ? '6px' : '4px',
-        flex: 1,
-        alignItems: sidebarCollapsed ? 'center' : 'stretch'
+        flex: 1
       }}>
         {navItems.map((item) => {
           const isActive = activeTab === item.id;
           return (
             <button
-              key={item.label}
+              key={item.id}
               onClick={() => setActiveTab(item.id)}
               title={sidebarCollapsed ? item.label : undefined}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
-                gap: '10px',
+                gap: '12px',
                 padding: sidebarCollapsed ? '0' : '10px 12px',
                 width: sidebarCollapsed ? '42px' : '100%',
                 height: sidebarCollapsed ? '42px' : 'auto',
@@ -63,7 +92,7 @@ const DoctorSidebar = ({ sidebarCollapsed, activeTab, setActiveTab }: DoctorSide
                   : '#64748B',
                 fontWeight: isActive ? 600 : 500,
                 cursor: 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                transition: 'all 0.2s',
                 fontSize: '13px',
                 whiteSpace: 'nowrap',
                 position: 'relative',
@@ -88,7 +117,7 @@ const DoctorSidebar = ({ sidebarCollapsed, activeTab, setActiveTab }: DoctorSide
               }}
             >
               <item.icon
-                size={sidebarCollapsed ? 20 : 17}
+                size={sidebarCollapsed ? 20 : 18}
                 strokeWidth={isActive ? 2.3 : 1.8}
               />
               {!sidebarCollapsed && (
@@ -97,9 +126,12 @@ const DoctorSidebar = ({ sidebarCollapsed, activeTab, setActiveTab }: DoctorSide
               {!sidebarCollapsed && isActive && (
                 <div style={{
                   position: 'absolute',
-                  left: '0', top: '50%', transform: 'translateY(-50%)',
-                  width: '3px', height: '60%',
-                  borderRadius: '0 3px 3px 0',
+                  right: '0', 
+                  top: '50%', 
+                  transform: 'translateY(-50%)',
+                  width: '3px', 
+                  height: '60%',
+                  borderRadius: '3px 0 0 3px',
                   backgroundColor: '#1F9FA3'
                 }} />
               )}
