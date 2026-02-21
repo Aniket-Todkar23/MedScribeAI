@@ -1,7 +1,10 @@
 import { AuthPage } from './features/auth/AuthPage';
+import OnboardingPage from './features/onboarding/OnboardingPage';
 
 function App() {
-  return <AuthPage />;
+  // Toggle between AuthPage and OnboardingPage
+  // Change to <AuthPage /> to view the login/signup form
+  return <OnboardingPage />;
 }
 
 export default App;

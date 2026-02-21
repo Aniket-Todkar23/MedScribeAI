@@ -38,6 +38,57 @@ CREATE TABLE IF NOT EXISTS patients (
 );
 
 -- =============================================
+-- PATIENT ONBOARDING TABLE
+-- Stores comprehensive medical history from onboarding form
+-- =============================================
+CREATE TABLE IF NOT EXISTS patient_onboarding (
+    onboarding_id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    patient_id              UUID NOT NULL REFERENCES patients(patient_id) ON DELETE CASCADE,
+
+    -- Step 1: Basic Information
+    emergency_contact_name  VARCHAR(150),
+    emergency_contact_phone VARCHAR(20),
+
+    -- Step 2: Medical Conditions
+    has_diabetes            BOOLEAN DEFAULT FALSE,
+    diabetes_type           VARCHAR(20) CHECK (diabetes_type IN ('type1', 'type2', 'gestational', 'not-sure')),
+    on_insulin              BOOLEAN DEFAULT FALSE,
+
+    has_heart_disease       BOOLEAN DEFAULT FALSE,
+    heart_conditions        JSONB DEFAULT '[]'::JSONB,
+    -- ["heart-attack", "angina", "heart-failure", "arrhythmia", "stent-bypass", "heart-not-sure"]
+
+    has_lung_disease        BOOLEAN DEFAULT FALSE,
+    lung_conditions         JSONB DEFAULT '[]'::JSONB,
+    -- ["asthma", "copd", "tuberculosis", "lung-other"]
+    uses_inhaler_daily      BOOLEAN DEFAULT FALSE,
+
+    no_medical_conditions   BOOLEAN DEFAULT FALSE,
+
+    -- Step 3: Medications & Lifestyle
+    taking_medications      BOOLEAN DEFAULT FALSE,
+    medications_list        TEXT,
+
+    has_allergies           BOOLEAN DEFAULT FALSE,
+    allergies_list          TEXT,
+
+    smoking_status          VARCHAR(20) CHECK (smoking_status IN ('never', 'occasionally', 'regularly')),
+    alcohol_use             VARCHAR(20) CHECK (alcohol_use IN ('no', 'occasionally', 'regularly')),
+
+    had_major_surgeries     BOOLEAN DEFAULT FALSE,
+    surgeries_details       TEXT,
+
+    -- Step 4: Consent
+    consent_data_storage    BOOLEAN DEFAULT FALSE NOT NULL,
+    consent_ai_assist       BOOLEAN DEFAULT FALSE NOT NULL,
+
+    -- Metadata
+    completed_at            TIMESTAMPTZ DEFAULT NOW(),
+    created_at              TIMESTAMPTZ DEFAULT NOW(),
+    updated_at              TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- =============================================
 -- CONSULTATIONS TABLE
 -- =============================================
 CREATE TABLE IF NOT EXISTS consultations (
@@ -203,10 +254,15 @@ CREATE TRIGGER trigger_patients_updated_at
     BEFORE UPDATE ON patients
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+CREATE TRIGGER trigger_patient_onboarding_updated_at
+    BEFORE UPDATE ON patient_onboarding
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
 CREATE TRIGGER trigger_consultations_updated_at
     BEFORE UPDATE ON consultations
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-
+patient_onboarding_patient ON patient_onboarding(patient_id);
+CREATE INDEX IF NOT EXISTS idx_
 -- =============================================
 -- INDEXES
 -- =============================================
@@ -228,20 +284,22 @@ CREATE INDEX IF NOT EXISTS idx_audit_phi                 ON audit_log(is_phi_acc
 
 -- =============================================
 -- ROW LEVEL SECURITY (RLS) — Supabase Specific
--- =============================================
-ALTER TABLE doctors         ENABLE ROW LEVEL SECURITY;
-ALTER TABLE patients        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE consultations   ENABLE ROW LEVEL SECURITY;
-ALTER TABLE documents       ENABLE ROW LEVEL SECURITY;
-ALTER TABLE notification_log ENABLE ROW LEVEL SECURITY;
-ALTER TABLE audit_log       ENABLE ROW LEVEL SECURITY;
+-- =========================     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE patients             ENABLE ROW LEVEL SECURITY;
+ALTER TABLE patient_onboarding   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE consultations        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE documents            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notification_log     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_log            ENABLE ROW LEVEL SECURITY;
 
 -- Allow all for now (tighten before production)
-CREATE POLICY "Allow all for doctors"          ON doctors          FOR ALL USING (true);
-CREATE POLICY "Allow all for patients"         ON patients         FOR ALL USING (true);
-CREATE POLICY "Allow all for consultations"    ON consultations    FOR ALL USING (true);
-CREATE POLICY "Allow all for documents"        ON documents        FOR ALL USING (true);
-CREATE POLICY "Allow all for notifications"    ON notification_log FOR ALL USING (true);
+CREATE POLICY "Allow all for doctors"             ON doctors             FOR ALL USING (true);
+CREATE POLICY "Allow all for patients"            ON patients            FOR ALL USING (true);
+CREATE POLICY "Allow all for patient_onboarding"  ON patient_onboarding  FOR ALL USING (true);
+CREATE POLICY "Allow all for consultations"       ON consultations       FOR ALL USING (true);
+CREATE POLICY "Allow all for documents"           ON documents           FOR ALL USING (true);
+CREATE POLICY "Allow all for notifications"       ON notification_log    FOR ALL USING (true);
+CREATE POLICY "Allow all for audit"               ON audit_log   ion_log FOR ALL USING (true);
 CREATE POLICY "Allow all for audit"            ON audit_log        FOR ALL USING (true);
 
 -- =============================================
@@ -338,7 +396,9 @@ ALTER TABLE audit_log
         'ai_suggestion_accepted',
         'ai_suggestion_rejected',
         'appointment_created',
-        'appointment_updated',
+        'appointment_updated',,
+        'patient_onboarding_completed',
+        'patient_onboarding_updated'
         'appointment_cancelled',
         'appointment_completed'
     ));
