@@ -1,0 +1,13 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "Themes – Category B\r <b>Smart EMR & Diagnostic Assistant</b>\r Concept:\r A voice-first system that transforms clinician-patient interactions into structured data, diagnoses, and actionable insights—streamlining documentation and improving care quality.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}
