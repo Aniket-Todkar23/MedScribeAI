@@ -6,6 +6,9 @@ const helmet  = require('helmet');
 
 const authRoutes = require('./routes/authRoutes');
 const onboardingRoutes = require('./routes/onboardingRoutes');
+const documentRoutes = require('./routes/documentRoutes');
+const reportRoutes = require('./routes/reportRoutes');
+const patientRoutes = require('./routes/patientRoutes');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -25,6 +28,9 @@ app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 /* -- API routes ------------------------------------- */
 app.use('/api/auth', authRoutes);
 app.use('/api/onboarding', onboardingRoutes);
+app.use('/api/documents', documentRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/patients', patientRoutes);
 
 /* -- 404 handler ------------------------------------ */
 app.use((_req, res) => res.status(404).json({ message: 'Route not found.' }));

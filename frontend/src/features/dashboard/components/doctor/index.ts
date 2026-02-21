@@ -6,4 +6,5 @@ export { default as PatientSearchBar } from './PatientSearchBar';
 export { default as PatientRecords } from './PatientRecords';
 export { default as LiveTranscription } from './LiveTranscription';
 export { default as AIAssistantPanel } from './AIAssistantPanel';
+export { default as ReportsTab } from './ReportsTab';
 export * from './types';

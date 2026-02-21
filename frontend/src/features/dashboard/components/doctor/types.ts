@@ -1,4 +1,4 @@
-export type DoctorTabId = 'analytics' | 'search' | 'prescription' | 'appointments' | 'records' | 'audit-logs';
+export type DoctorTabId = 'analytics' | 'search' | 'prescription' | 'appointments' | 'records' | 'reports' | 'audit-logs';
 
 export interface Medication {
   drug: string;
@@ -20,6 +20,41 @@ export interface ChatMessage {
   role: string;
   text: string;
   time: string;
+}
+
+export interface PatientReport {
+  report_id: number;
+  patient_id: string;
+  doctor_id: string;
+  report_name: string;
+  report_type: string;
+  file_url: string;
+  file_size: number;
+  file_extension: string;
+  ai_summary: string;
+  key_findings: string[];
+  uploaded_at: string;
+  updated_at: string;
+  doctor_name?: string;
+  doctor_specialization?: string;
+}
+
+export interface PatientHistory {
+  patient: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    dateOfBirth: string;
+    gender: string;
+  };
+  onboarding: any;
+  reports: PatientReport[];
+  reportSummary: {
+    totalReports: number;
+    recentUploads: PatientReport[];
+    allKeyFindings: string[];
+  };
 }
 
 export interface ExamplePatient {

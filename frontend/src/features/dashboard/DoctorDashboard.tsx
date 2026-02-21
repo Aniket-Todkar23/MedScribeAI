@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
 import { ChevronLeft } from "lucide-react";
@@ -12,9 +12,11 @@ import {
   PatientRecords,
   LiveTranscription,
   AIAssistantPanel,
+  ReportsTab,
   examplePatient,
 } from "./components/doctor";
-import type { DoctorTabId } from "./components/doctor";
+import type { DoctorTabId, ExamplePatient } from "./components/doctor";
+import { searchPatientByPhone, storePatientData, getStoredPatientData, clearPatientData, type Patient } from "../../services/patientService";
 
 const DoctorDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -30,24 +32,50 @@ const DoctorDashboard = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [activeTab, setActiveTab] = useState<DoctorTabId>("analytics");
+  const [currentPatient, setCurrentPatient] = useState<Patient | ExamplePatient | null>(null);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
-  const handleSetActiveTab = (tab: DoctorTabId) => {
-    setActiveTab(tab);
-    if (tab !== 'search') {
-      setPatientFound(false);
-      setSearchQuery("");
-      setTranscript("");
-      setIsRecording(false);
-    }
-    if (isMobile) setMobileSidebarOpen(false);
-  };
-
-  const handleSearch = () => {
-    if (searchQuery.trim() === "+1234567890" || searchQuery.trim() === "1234567890") {
+  // Load patient from localStorage on mount
+  useEffect(() => {
+    const storedPatient = getStoredPatientData();
+    if (storedPatient) {
+      setCurrentPatient(storedPatient);
+      if (isMobile) setMobileSidebarOpen(false);
       setPatientFound(true);
-    } else {
+      setSearchQuery(storedPatient.phone);
+    }
+  }, []);
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      setSearchError('Please enter a phone number');
+      return;
+    }
+
+    setIsSearching(true);
+    setSearchError(null);
+    
+    try {
+      const result = await searchPatientByPhone(searchQuery.trim());
+      
+      if (result.success && result.patient) {
+        setCurrentPatient(result.patient);
+        setPatientFound(true);
+        storePatientData(result.patient);
+        setSearchError(null);
+      } else {
+        setPatientFound(false);
+        setCurrentPatient(null);
+        setSearchError(result.message || 'Patient not found');
+      }
+    } catch (error) {
+      console.error('Search error:', error);
       setPatientFound(false);
-      alert("Patient not found. Try searching: +1234567890");
+      setCurrentPatient(null);
+      setSearchError('Failed to search patient. Please try again.');
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -83,9 +111,7 @@ const DoctorDashboard = () => {
           : `${sidebarCollapsed ? "60px" : "260px"} 1fr ${aiPanelCollapsed ? "60px" : "320px"}`,
         gridTemplateRows: "auto 1fr",
         height: "100vh",
-        backgroundColor: "var(--color-surface)",
-        transition: "grid-template-columns 0.3s cubic-bezier(0.4,0,0.2,1)",
-        overflow: "hidden",
+        backgroundColor: "#F8FAFB",
       }}
     >
       {/* Header */}
@@ -95,7 +121,7 @@ const DoctorDashboard = () => {
         aiPanelCollapsed={aiPanelCollapsed}
         setAiPanelCollapsed={setAiPanelCollapsed}
         activeTab={activeTab}
-        setActiveTab={handleSetActiveTab}
+        setActiveTab={setActiveTab}
         patientFound={patientFound}
         isMobile={isMobile}
         mobileSidebarOpen={mobileSidebarOpen}
@@ -116,7 +142,7 @@ const DoctorDashboard = () => {
       <DoctorSidebar
         sidebarCollapsed={isMobile ? false : sidebarCollapsed}
         activeTab={activeTab}
-        setActiveTab={handleSetActiveTab}
+        setActiveTab={setActiveTab}
         isMobile={isMobile}
         isOpen={mobileSidebarOpen}
       />
@@ -136,30 +162,42 @@ const DoctorDashboard = () => {
           <PrescriptionTab
             setActiveTab={setActiveTab}
             patientFound={patientFound}
-            patient={examplePatient}
+            patient={{
+              ...examplePatient,
+              ...(currentPatient && {
+                patient_id: currentPatient.patient_id,
+                full_name: currentPatient.full_name,
+                email: currentPatient.email,
+                phone: currentPatient.phone,
+                date_of_birth: currentPatient.date_of_birth,
+                gender: currentPatient.gender,
+                blood_group: currentPatient.blood_group,
+                address: currentPatient.address,
+                emergency_contact: currentPatient.emergency_contact,
+              })
+            }}
+          />
+        )}
+
+        {/* Reports tab */}
+        {activeTab === "reports" && patientFound && currentPatient && (
+          <ReportsTab
+            patientId={currentPatient.patient_id}
+            patientName={currentPatient.full_name}
           />
         )}
 
         {/* Analytics overview */}
         {!patientFound && activeTab === "analytics" && <AnalyticsOverview />}
 
-        {/* Patient search bar (for analytics and search tabs) */}
-        {(activeTab === "analytics" || activeTab === "search") && (
+        {/* Patient search bar (for analytics, search, and reports tabs) */}
+        {(activeTab === "analytics" || activeTab === "search" || activeTab === "reports") && (
           <PatientSearchBar
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
             onSearch={handleSearch}
-            showBack={patientFound || activeTab === "search"}
-            onBack={() => {
-              if (patientFound) {
-                setPatientFound(false);
-                setSearchQuery("");
-                setTranscript("");
-                setIsRecording(false);
-              } else if (activeTab === "search") {
-                setActiveTab("analytics");
-              }
-            }}
+            isSearching={isSearching}
+            searchError={searchError}
           />
         )}
 
@@ -179,12 +217,27 @@ const DoctorDashboard = () => {
                 }}
               >
                 <PatientRecords
-                  patient={examplePatient}
+                  patient={{
+                    ...examplePatient,
+                    ...(currentPatient && {
+                      patient_id: currentPatient.patient_id,
+                      full_name: currentPatient.full_name,
+                      email: currentPatient.email,
+                      phone: currentPatient.phone,
+                      date_of_birth: currentPatient.date_of_birth,
+                      gender: currentPatient.gender,
+                      blood_group: currentPatient.blood_group,
+                      address: currentPatient.address,
+                      emergency_contact: currentPatient.emergency_contact,
+                    })
+                  }}
                   onBack={() => {
-                   setPatientFound(false);
-                   setSearchQuery("");
-                   setTranscript("");
-                   setIsRecording(false);
+                    setPatientFound(false);
+                    setSearchQuery("");
+                    setTranscript("");
+                    setIsRecording(false);
+                    setCurrentPatient(null);
+                    clearPatientData();
                   }}
                 />
                 <LiveTranscription
@@ -246,6 +299,38 @@ const DoctorDashboard = () => {
               )
             )}
           </>
+        )}
+
+        {/* Empty state for reports tab when no patient selected */}
+        {activeTab === "reports" && !patientFound && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "40px 20px",
+              marginTop: "20px",
+              borderRadius: "16px",
+              backgroundColor: "white",
+              border: "1px solid rgba(0,0,0,0.04)",
+            }}
+          >
+            <DotLottieReact
+              src="https://lottie.host/33afb46d-3996-42ae-a226-79b6f21c9942/7yftKeWX5f.lottie"
+              loop
+              autoplay
+              style={{ width: 220, height: 220, marginBottom: 10 }}
+            />
+            <h3 style={{ color: "#0B3C3D", fontSize: "18px", fontWeight: 700, marginBottom: "6px" }}>
+              Search for a patient to upload reports
+            </h3>
+            <p style={{ color: "#64748B", fontSize: "13px" }}>
+              Enter a phone number above to access patient reports
+            </p>
+          </motion.div>
         )}
       </main>
 

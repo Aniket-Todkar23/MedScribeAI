@@ -1,14 +1,7 @@
 import {
-  Search, FileText, Calendar, TrendingUp, Printer, ScrollText
+  Search, FileText, Calendar, TrendingUp, Printer, ScrollText, Upload
 } from "lucide-react";
-
-export type DoctorTabId =
-  | "analytics"
-  | "search"
-  | "prescription"
-  | "appointments"
-  | "records"
-  | "audit-logs";
+import type { DoctorTabId } from "./types";
 
 interface DoctorSidebarProps {
   sidebarCollapsed: boolean;
@@ -18,13 +11,14 @@ interface DoctorSidebarProps {
   isOpen?: boolean;
 }
 
-const navItems = [
-  { icon: TrendingUp, label: "Analytics", id: "analytics" as DoctorTabId },
-  { icon: Search, label: "Search", id: "search" as DoctorTabId },
-  { icon: Printer, label: "Prescription", id: "prescription" as DoctorTabId },
-  { icon: Calendar, label: "Appointments", id: "appointments" as DoctorTabId },
-  { icon: FileText, label: "EMR Records", id: "records" as DoctorTabId },
-  { icon: ScrollText, label: "Audit Logs", id: "audit-logs" as DoctorTabId }
+const navItems: { icon: typeof TrendingUp; label: string; id: DoctorTabId }[] = [
+  { icon: TrendingUp, label: "Analytics", id: "analytics" },
+  { icon: Search, label: "Search", id: "search" },
+  { icon: Printer, label: "Prescription", id: "prescription" },
+  { icon: Calendar, label: "Appointments", id: "appointments" },
+  { icon: FileText, label: "EMR Records", id: "records" },
+  { icon: Upload, label: "Reports", id: "reports" },
+  { icon: ScrollText, label: "Audit Logs", id: "audit-logs" }
 ];
 
 const DoctorSidebar = ({ 
