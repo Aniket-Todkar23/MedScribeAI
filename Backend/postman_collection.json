@@ -1,0 +1,324 @@
+{
+  "info": {
+    "name": "Smart EMR Appointment API",
+    "description": "Complete API collection for appointment scheduling, Google Meet integration, and recording management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health & Info",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Root Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Appointments",
+      "item": [
+        {
+          "name": "Create Appointment Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctor_id\": \"{{doctorId}}\",\n  \"patient_id\": \"{{patientId}}\",\n  \"appointment_date\": \"2026-02-25T10:00:00Z\",\n  \"duration_minutes\": 30,\n  \"appointment_type\": \"telehealth\",\n  \"reason\": \"Follow-up consultation for chest pain\",\n  \"notes\": \"Patient prefers morning appointments\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/request",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "appointments", "request"]
+            }
+          }
+        },
+        {
+          "name": "Confirm Appointment (Create Google Meet)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"google_tokens\": {\n    \"access_token\": \"{{googleAccessToken}}\",\n    \"refresh_token\": \"{{googleRefreshToken}}\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/{{appointmentId}}/confirm",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "appointments", "{{appointmentId}}", "confirm"]
+            }
+          }
+        },
+        {
+          "name": "Get Appointment by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/{{appointmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "appointments", "{{appointmentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Doctor Appointments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/doctor/{{doctorId}}?status=scheduled",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "appointments", "doctor", "{{doctorId}}"],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "scheduled"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2026-02-20",
+                  "disabled": true
+                },
+                {
+                  "key": "endDate",
+                  "value": "2026-02-28",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Patient Appointments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/patient/{{patientId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "appointments", "patient", "{{patientId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Appointment",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointment_date\": \"2026-02-26T14:00:00Z\",\n  \"duration_minutes\": 45,\n  \"notes\": \"Updated appointment notes\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/{{appointmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "appointments", "{{appointmentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Cancel Appointment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cancelled_reason\": \"Patient has conflicting appointment\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/{{appointmentId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "appointments", "{{appointmentId}}", "cancel"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Recordings",
+      "item": [
+        {
+          "name": "Upload Recording",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "recording",
+                  "type": "file",
+                  "src": "/path/to/recording.webm"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/{{appointmentId}}/recording",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "appointments", "{{appointmentId}}", "recording"]
+            }
+          }
+        },
+        {
+          "name": "Generate New SAS URL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/recordings/{{blobName}}/sas-url?expiryHours=24",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "recordings", "{{blobName}}", "sas-url"],
+              "query": [
+                {
+                  "key": "expiryHours",
+                  "value": "24"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Doctors",
+      "item": [
+        {
+          "name": "Get All Doctors",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/doctors/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "appointments", "doctors", "all"],
+              "query": [
+                {
+                  "key": "specialization",
+                  "value": "Cardiology",
+                  "disabled": true
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Google OAuth",
+      "item": [
+        {
+          "name": "Get Google Auth URL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/google/auth-url",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "appointments", "google", "auth-url"]
+            }
+          }
+        },
+        {
+          "name": "OAuth Callback",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/appointments/google/oauth2callback?code={{authCode}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "appointments", "google", "oauth2callback"],
+              "query": [
+                {
+                  "key": "code",
+                  "value": "{{authCode}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "appointmentId",
+      "value": "your-appointment-uuid",
+      "type": "string"
+    },
+    {
+      "key": "doctorId",
+      "value": "your-doctor-uuid",
+      "type": "string"
+    },
+    {
+      "key": "patientId",
+      "value": "your-patient-uuid",
+      "type": "string"
+    },
+    {
+      "key": "blobName",
+      "value": "recording-filename.mp3",
+      "type": "string"
+    },
+    {
+      "key": "googleAccessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "googleRefreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "authCode",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
