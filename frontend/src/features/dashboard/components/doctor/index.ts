@@ -1,0 +1,9 @@
+export { default as DoctorHeader } from './DoctorHeader';
+export { default as DoctorSidebar } from './DoctorSidebar';
+export { default as PrescriptionTab } from './PrescriptionTab';
+export { default as AnalyticsOverview } from './AnalyticsOverview';
+export { default as PatientSearchBar } from './PatientSearchBar';
+export { default as PatientRecords } from './PatientRecords';
+export { default as LiveTranscription } from './LiveTranscription';
+export { default as AIAssistantPanel } from './AIAssistantPanel';
+export * from './types';

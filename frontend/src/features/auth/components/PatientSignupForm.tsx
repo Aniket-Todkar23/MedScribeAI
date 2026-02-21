@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import type { PatientSignupPayload } from '../../../types/auth';
-import styles from '../auth.module.css';
 
 interface PatientSignupFormProps {
   onSubmit: (payload: PatientSignupPayload) => void;
@@ -22,10 +21,18 @@ const EyeOffIcon = () => (
   </svg>
 );
 const LoadingDots = () => (
-  <span className={styles.loadingDots}>
-    <span className={styles.dot} /><span className={styles.dot} /><span className={styles.dot} />
+  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, height: 18 }}>
+    <span style={{ width: 5, height: 5, background: '#fff', borderRadius: '50%', animation: 'dotPulse 1.2s ease-in-out infinite' }} />
+    <span style={{ width: 5, height: 5, background: '#fff', borderRadius: '50%', animation: 'dotPulse 1.2s ease-in-out infinite 0.2s' }} />
+    <span style={{ width: 5, height: 5, background: '#fff', borderRadius: '50%', animation: 'dotPulse 1.2s ease-in-out infinite 0.4s' }} />
   </span>
 );
+
+const sectionLabelStyle: React.CSSProperties = {
+  fontSize: 11, fontWeight: 700, color: 'var(--color-primary)', letterSpacing: '0.08em', textTransform: 'uppercase', margin: '8px 0 0 0',
+};
+const fieldGroupStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 6 };
+const labelStyle: React.CSSProperties = { fontSize: '11.5px', fontWeight: 700, color: 'var(--color-text-secondary)', letterSpacing: '0.06em', textTransform: 'uppercase' };
 
 export const PatientSignupForm: React.FC<PatientSignupFormProps> = ({
   onSubmit, onToggle, onBack, isLoading, error,
@@ -60,74 +67,77 @@ export const PatientSignupForm: React.FC<PatientSignupFormProps> = ({
   const displayError = localError || error;
 
   return (
-    <div className={styles.formInner}>
-      <div className={styles.logoMark}>
+    <div style={{ width: '100%' }}>
+      <div style={{ width: 38, height: 38, marginBottom: 28 }}>
         <svg viewBox="0 0 38 38" fill="none">
-          <rect width="38" height="38" rx="10" fill="#6366f1" />
+          <rect width="38" height="38" rx="10" fill="var(--color-primary)" />
           <path d="M10 19L16.5 25.5L28 12.5" stroke="white" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
 
-      <div className={styles.formHeader}>
-        <h1 className={styles.formTitle}>Patient Registration</h1>
-        <p className={styles.formSubtitle}>Get started with your personal health portal.</p>
+      <div style={{ marginBottom: 28 }}>
+        <h1 style={{ fontSize: 27, fontWeight: 700, color: 'var(--color-text-primary)', letterSpacing: '-0.6px', margin: '0 0 7px 0', lineHeight: 1.2 }}>
+          Patient Registration
+        </h1>
+        <p style={{ fontSize: 14, color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.55 }}>
+          Get started with your personal health portal.
+        </p>
       </div>
 
-      <form className={styles.form} onSubmit={handleSubmit} noValidate>
-        {displayError && <p className={styles.errorMsg} role="alert">{displayError}</p>}
+      <form style={{ display: 'flex', flexDirection: 'column', gap: 18 }} onSubmit={handleSubmit} noValidate>
+        {displayError && <div className="alert alert-critical" role="alert" style={{ fontSize: 13, padding: '10px 14px' }}>{displayError}</div>}
 
-        <p className={styles.sectionLabel}>Account Details</p>
+        <p style={sectionLabelStyle}>Account Details</p>
 
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Full Name <span className={styles.required}>*</span></label>
-          <input className={styles.input} type="text" placeholder="Jane Doe"
+        <div style={fieldGroupStyle}>
+          <label style={labelStyle}>Full Name <span style={{ color: 'var(--color-red)' }}>*</span></label>
+          <input type="text" placeholder="Jane Doe"
             value={fullName} onChange={(e) => setFullName(e.target.value)} required autoComplete="name" autoFocus />
         </div>
 
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Email <span className={styles.required}>*</span></label>
-          <input className={styles.input} type="email" placeholder="jane@example.com"
+        <div style={fieldGroupStyle}>
+          <label style={labelStyle}>Email <span style={{ color: 'var(--color-red)' }}>*</span></label>
+          <input type="email" placeholder="jane@example.com"
             value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
         </div>
 
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Password <span className={styles.required}>*</span></label>
-          <div className={styles.inputWrapper}>
-            <input className={`${styles.input} ${styles.inputWithIcon}`}
+        <div style={fieldGroupStyle}>
+          <label style={labelStyle}>Password <span style={{ color: 'var(--color-red)' }}>*</span></label>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <input style={{ paddingRight: 42 }}
               type={showPassword ? 'text' : 'password'} placeholder="Min 8 characters"
               value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="new-password" />
-            <button type="button" className={styles.eyeBtn}
+            <button type="button"
+              style={{ position: 'absolute', right: 4, background: 'none', border: 'none', padding: 4, cursor: 'pointer', color: 'var(--color-text-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 0 }}
               onClick={() => setShowPassword((v) => !v)} tabIndex={-1} aria-label="Toggle password">
               {showPassword ? <EyeOffIcon /> : <EyeIcon />}
             </button>
           </div>
         </div>
 
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Confirm Password <span className={styles.required}>*</span></label>
-          <input className={styles.input} type={showPassword ? 'text' : 'password'}
+        <div style={fieldGroupStyle}>
+          <label style={labelStyle}>Confirm Password <span style={{ color: 'var(--color-red)' }}>*</span></label>
+          <input type={showPassword ? 'text' : 'password'}
             placeholder="Repeat password" value={confirm} onChange={(e) => setConfirm(e.target.value)}
             required autoComplete="new-password" />
         </div>
 
-        <p className={styles.sectionLabel}>Health Info <span className={styles.optional}>(optional)</span></p>
+        <p style={sectionLabelStyle}>Health Info <span style={{ fontWeight: 400, color: 'var(--color-text-subtle)', textTransform: 'none', fontSize: 11 }}>(optional)</span></p>
 
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Phone</label>
-          <input className={styles.input} type="tel" placeholder="+1 555 000 0000"
+        <div style={fieldGroupStyle}>
+          <label style={labelStyle}>Phone</label>
+          <input type="tel" placeholder="+1 555 000 0000"
             value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
         </div>
 
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Date of Birth</label>
-          <input className={styles.input} type="date"
-            value={dob} onChange={(e) => setDob(e.target.value)} />
+        <div style={fieldGroupStyle}>
+          <label style={labelStyle}>Date of Birth</label>
+          <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} />
         </div>
 
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Gender</label>
-          <select className={`${styles.input} ${styles.select}`}
-            value={gender} onChange={(e) => setGender(e.target.value)}>
+        <div style={fieldGroupStyle}>
+          <label style={labelStyle}>Gender</label>
+          <select style={{ cursor: 'pointer' }} value={gender} onChange={(e) => setGender(e.target.value)}>
             <option value="">— Select —</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
@@ -135,24 +145,24 @@ export const PatientSignupForm: React.FC<PatientSignupFormProps> = ({
           </select>
         </div>
 
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Blood Group</label>
-          <input className={styles.input} type="text" placeholder="e.g. A+"
+        <div style={fieldGroupStyle}>
+          <label style={labelStyle}>Blood Group</label>
+          <input type="text" placeholder="e.g. A+"
             value={bloodGroup} onChange={(e) => setBloodGroup(e.target.value)} maxLength={5} />
         </div>
 
-        <button type="submit" className={styles.submitBtn} disabled={isLoading}>
+        <button type="submit" className="btn-primary btn-full btn-lg" disabled={isLoading} style={{ marginTop: 4 }}>
           {isLoading ? <LoadingDots /> : 'Create Account'}
         </button>
       </form>
 
-      <div className={styles.formFooter}>
-        <button type="button" className={styles.toggleBtn} onClick={onBack}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 22, gap: 12 }}>
+        <button type="button" style={{ background: 'none', border: 'none', padding: 0, color: 'var(--color-primary)', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }} onClick={onBack}>
           &larr; Back
         </button>
-        <p className={styles.toggleText}>
+        <p style={{ fontSize: 13.5, color: 'var(--color-text-muted)', margin: 0 }}>
           Already have an account?{' '}
-          <button type="button" className={styles.toggleBtn} onClick={onToggle}>Sign in</button>
+          <button type="button" style={{ background: 'none', border: 'none', padding: 0, color: 'var(--color-primary)', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }} onClick={onToggle}>Sign in</button>
         </p>
       </div>
     </div>

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import styles from '../auth.module.css';
 
 interface LoginFormProps {
   onSubmit: (email: string, password: string) => void;
@@ -22,10 +21,10 @@ const EyeOffIcon = () => (
 );
 
 const LoadingDots = () => (
-  <span className={styles.loadingDots}>
-    <span className={styles.dot} />
-    <span className={styles.dot} />
-    <span className={styles.dot} />
+  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, height: 18 }}>
+    <span style={{ width: 5, height: 5, background: '#fff', borderRadius: '50%', animation: 'dotPulse 1.2s ease-in-out infinite' }} />
+    <span style={{ width: 5, height: 5, background: '#fff', borderRadius: '50%', animation: 'dotPulse 1.2s ease-in-out infinite 0.2s' }} />
+    <span style={{ width: 5, height: 5, background: '#fff', borderRadius: '50%', animation: 'dotPulse 1.2s ease-in-out infinite 0.4s' }} />
   </span>
 );
 
@@ -45,34 +44,31 @@ export const LoginForm: React.FC<LoginFormProps> = ({
   };
 
   return (
-    <div className={styles.formInner}>
+    <div style={{ width: '100%' }}>
       {/* Logo */}
-      <div className={styles.logoMark}>
+      <div style={{ width: 38, height: 38, marginBottom: 28 }}>
         <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="38" height="38" rx="10" fill="#6366f1" />
-          <path
-            d="M10 19L16.5 25.5L28 12.5"
-            stroke="white"
-            strokeWidth="2.8"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+          <rect width="38" height="38" rx="10" fill="var(--color-primary)" />
+          <path d="M10 19L16.5 25.5L28 12.5" stroke="white" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
 
       {/* Header */}
-      <div className={styles.formHeader}>
-        <h1 className={styles.formTitle}>Welcome back</h1>
-        <p className={styles.formSubtitle}>Sign in to your account to continue.</p>
+      <div style={{ marginBottom: 28 }}>
+        <h1 style={{ fontSize: 27, fontWeight: 700, color: 'var(--color-text-primary)', letterSpacing: '-0.6px', margin: '0 0 7px 0', lineHeight: 1.2 }}>
+          Welcome back
+        </h1>
+        <p style={{ fontSize: 14, color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.55 }}>
+          Sign in to your account to continue.
+        </p>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className={styles.form} noValidate>
-        <div className={styles.fieldGroup}>
-          <label className={styles.label}>Email address</label>
+      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }} noValidate>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <label className="label uppercase" style={{ fontSize: '11.5px' }}>Email address</label>
           <input
             type="email"
-            className={styles.input}
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -82,17 +78,17 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           />
         </div>
 
-        <div className={styles.fieldGroup}>
-          <div className={styles.labelRow}>
-            <label className={styles.label}>Password</label>
-            <button type="button" className={styles.forgotLink}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <label className="label uppercase" style={{ fontSize: '11.5px' }}>Password</label>
+            <button type="button" style={{ background: 'none', border: 'none', padding: 0, fontSize: 12, color: 'var(--color-primary)', cursor: 'pointer', fontWeight: 500 }}>
               Forgot password?
             </button>
           </div>
-          <div className={styles.inputWrapper}>
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
             <input
               type={showPassword ? 'text' : 'password'}
-              className={`${styles.input} ${styles.inputWithIcon}`}
+              style={{ paddingRight: 42 }}
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -101,7 +97,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
             />
             <button
               type="button"
-              className={styles.eyeBtn}
+              style={{ position: 'absolute', right: 4, background: 'none', border: 'none', padding: 4, cursor: 'pointer', color: 'var(--color-text-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 0 }}
               onClick={() => setShowPassword((s) => !s)}
               tabIndex={-1}
               aria-label={showPassword ? 'Hide password' : 'Show password'}
@@ -112,19 +108,19 @@ export const LoginForm: React.FC<LoginFormProps> = ({
         </div>
 
         {error && (
-          <p className={styles.errorMsg} role="alert">
+          <div className="alert alert-critical" role="alert" style={{ fontSize: 13, padding: '10px 14px' }}>
             {error}
-          </p>
+          </div>
         )}
 
-        <button type="submit" className={styles.submitBtn} disabled={isLoading}>
+        <button type="submit" className="btn-primary btn-full btn-lg" disabled={isLoading} style={{ marginTop: 4 }}>
           {isLoading ? <LoadingDots /> : 'Sign in'}
         </button>
       </form>
 
-      <p className={styles.toggleText}>
+      <p style={{ fontSize: 13.5, color: 'var(--color-text-muted)', textAlign: 'center', marginTop: 22 }}>
         Don't have an account?{' '}
-        <button type="button" className={styles.toggleBtn} onClick={onToggle}>
+        <button type="button" style={{ background: 'none', border: 'none', padding: 0, color: 'var(--color-primary)', fontSize: 13.5, fontWeight: 600, cursor: 'pointer' }} onClick={onToggle}>
           Create one
         </button>
       </p>
