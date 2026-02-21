@@ -9,6 +9,8 @@ const onboardingRoutes = require('./routes/onboardingRoutes');
 const documentRoutes = require('./routes/documentRoutes');
 const reportRoutes = require('./routes/reportRoutes');
 const patientRoutes = require('./routes/patientRoutes');
+const aiRoutes = require('./routes/aiRoutes');
+const consultationRoutes = require('./routes/consultationRoutes');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -19,7 +21,7 @@ app.use(cors({
   origin: process.env.CLIENT_ORIGIN || 'http://localhost:5173',
   credentials: true,
 }));
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 /* -- Health check ----------------------------------- */
@@ -31,6 +33,8 @@ app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/patients', patientRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/consultations', consultationRoutes);
 
 /* -- 404 handler ------------------------------------ */
 app.use((_req, res) => res.status(404).json({ message: 'Route not found.' }));
