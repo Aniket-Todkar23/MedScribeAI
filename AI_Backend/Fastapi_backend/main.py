@@ -88,9 +88,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Smart EMR — Audio → EMR",
+    title="EMR ASSISSTANT",
     description="""
-## Smart EMR Pipeline
+## EMR GENERATION Pipeline
 
 Converts audio recordings into fully structured EMR records with ICD code mapping.
 
