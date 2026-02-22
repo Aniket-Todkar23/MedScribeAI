@@ -42,14 +42,14 @@ class AppointmentController {
                 });
             }
 
-            // Create appointment with 'scheduled' status initially
+            // Create appointment with 'pending' status so doctor can approve
             const appointmentData = {
                 doctor_id,
                 patient_id,
                 appointment_date: new Date(appointment_date).toISOString(),
                 duration_minutes: duration_minutes || 30,
                 appointment_type: appointment_type || 'in_person',
-                status: 'scheduled',
+                status: 'pending',
                 reason,
                 notes
             };
@@ -71,10 +71,11 @@ class AppointmentController {
                 try {
                     console.log('📅 Starting automated pipeline for telehealth appointment...');
 
-                    // Check if Google OAuth tokens are provided
-                    if (!google_tokens) {
-                        console.warn('⚠️ No Google OAuth tokens provided. Telehealth appointment created but Meet link NOT generated.');
-                        console.warn('ℹ️ To enable automated pipeline: Complete Google OAuth first, then include google_tokens in request.');
+                    // Try to get Google tokens from request body OR from doctor's DB row
+                    let effectiveTokens = google_tokens || doctor?.google_tokens;
+
+                    if (!effectiveTokens || (!effectiveTokens.access_token && !effectiveTokens.refresh_token)) {
+                        console.warn('⚠️ No Google OAuth tokens available. Telehealth appointment created but Meet link NOT generated.');
                         
                         // Create notification without Meet link
                         await supabaseService.createNotificationLog({
@@ -82,28 +83,22 @@ class AppointmentController {
                             patient_id: patient_id,
                             channel: 'email',
                             status: 'pending',
-                            message_content: `Telehealth appointment created for ${moment(appointment_date).format('MMMM Do YYYY, h:mm a')}\n\n⚠️ Google Meet link not generated - OAuth authorization required.`
+                            message_content: `Telehealth appointment created for ${moment(appointment_date).format('MMMM Do YYYY, h:mm a')}\n\n⚠️ Google Meet link will be generated when the doctor approves.`
                         });
                         
                         return res.status(201).json({
                             success: true,
-                            message: '⚠️ Telehealth appointment created but automated pipeline NOT started. Please authorize Google OAuth first.',
+                            message: 'Telehealth appointment created. Meet link will be generated when the doctor approves.',
                             data: {
                                 ...appointment,
-                                warning: 'Google OAuth tokens not provided. Complete OAuth authorization to enable automated Meet link creation, emails, and recording.',
-                                nextSteps: [
-                                    '1. Go to Google OAuth tab in the frontend',
-                                    '2. Click "Start Authorization" and complete OAuth flow',
-                                    '3. Click "Save Authorization Tokens"',
-                                    '4. Create a new telehealth appointment'
-                                ]
+                                info: 'Meet link will be auto-generated when the doctor approves this appointment.'
                             }
                         });
                     }
 
                     // Set Google OAuth credentials
-                    googleMeetService.setCredentials(google_tokens);
-                    meetRecordingService.setCredentials(google_tokens);
+                    googleMeetService.setCredentials(effectiveTokens);
+                    meetRecordingService.setCredentials(effectiveTokens);
                     console.log('✅ Google OAuth credentials set');
 
                     // 1. CREATE GOOGLE MEET LINK
@@ -128,13 +123,17 @@ class AppointmentController {
                     pipelineStatus.autoRecordingEnabled = true;
                     console.log('✅ Auto-recording enabled');
 
-                    // 3. UPDATE APPOINTMENT STATUS TO 'CONFIRMED'
-                    await supabaseService.updateAppointment(appointment.appointment_id, {
+                    // 3. UPDATE APPOINTMENT STATUS TO 'CONFIRMED' + store meet_link & google_event_id
+                    const updateFields = {
                         status: 'confirmed',
                         notes: (appointment.notes || '') + `\n\nGoogle Meet Link: ${meetLink}`
-                    });
+                    };
+                    if (meetLink) updateFields.meet_link = meetLink;
+                    if (eventId) updateFields.google_event_id = eventId;
+
+                    await supabaseService.updateAppointment(appointment.appointment_id, updateFields);
                     appointment.status = 'confirmed';
-                    console.log('✅ Appointment status updated to confirmed');
+                    console.log('✅ Appointment status updated to confirmed with meet_link stored');
 
                     // 4. SEND EMAIL TO PATIENT
                     if (patient.email) {
@@ -260,10 +259,11 @@ class AppointmentController {
             let eventId = null;
 
             if (appointment.appointment_type === 'telehealth') {
-                // Set Google OAuth credentials
-                if (google_tokens) {
-                    googleMeetService.setCredentials(google_tokens);
-                    meetRecordingService.setCredentials(google_tokens);
+                // Set Google OAuth credentials: from request body OR from doctor's DB row
+                let tokens = google_tokens || doctor?.google_tokens;
+                if (tokens && (tokens.access_token || tokens.refresh_token)) {
+                    googleMeetService.setCredentials(tokens);
+                    meetRecordingService.setCredentials(tokens);
                 }
 
                 // Create Google Calendar event with Meet link
@@ -290,11 +290,15 @@ class AppointmentController {
                 console.log('✅ Auto-recording polling started for appointment:', appointmentId);
             }
 
-            // Update appointment status to confirmed
-            const updatedAppointment = await supabaseService.updateAppointment(appointmentId, {
+            // Update appointment status to confirmed + store meet link in DB
+            const updateData = {
                 status: 'confirmed',
-                notes: appointment.notes + (meetLink ? `\n\nGoogle Meet Link: ${meetLink}` : '')
-            });
+                notes: (appointment.notes || '') + (meetLink ? `\n\nGoogle Meet Link: ${meetLink}` : '')
+            };
+            if (meetLink) updateData.meet_link = meetLink;
+            if (eventId) updateData.google_event_id = eventId;
+
+            const updatedAppointment = await supabaseService.updateAppointment(appointmentId, updateData);
 
             // Send email notification to PATIENT
             if (patient.email && meetLink) {
@@ -435,10 +439,17 @@ class AppointmentController {
                 document_type: 'other',
                 file_url: recordingResult.blobName, // Store blob name, not SAS URL
                 file_size_kb: Math.round(recordingResult.size / 1024),
-                mime_type: 'audio/mpeg',
+                mime_type: recordingResult.format === 'mp3' ? 'audio/mpeg' : `audio/${recordingResult.format}`,
                 uploaded_by: appointment.doctor_id,
-                notes: 'Consultation recording - MP3 format'
+                notes: `Consultation recording - ${recordingResult.format.toUpperCase()} format`
             });
+
+            // Update appointment row with recording URL and blob name
+            await supabaseService.updateAppointment(appointmentId, {
+                recording_url: recordingResult.recordingUrl,
+                recording_blob_name: recordingResult.blobName
+            });
+            console.log(`✅ Recording URL stored in appointment ${appointmentId}`);
 
             res.status(200).json({
                 success: true,
@@ -619,6 +630,207 @@ class AppointmentController {
     }
 
     /**
+     * Approve a pending appointment (doctor action) — sets status to 'confirmed'
+     * For telehealth appointments: creates Google Meet link and stores it in DB
+     */
+    async approveAppointment(req, res) {
+        try {
+            const { appointmentId } = req.params;
+
+            const appointment = await supabaseService.getAppointmentById(appointmentId);
+            if (!appointment) {
+                return res.status(404).json({ success: false, message: 'Appointment not found' });
+            }
+            if (appointment.status !== 'pending' && appointment.status !== 'scheduled') {
+                return res.status(400).json({ success: false, message: `Cannot approve an appointment with status '${appointment.status}'` });
+            }
+
+            const doctor = await supabaseService.getDoctorById(appointment.doctor_id);
+            const patient = await supabaseService.getPatientById(appointment.patient_id);
+
+            let meetLink = null;
+            let eventId = null;
+
+            // For telehealth appointments, create Google Meet link
+            if (appointment.appointment_type === 'telehealth') {
+                try {
+                    // Try to get Google tokens: 1) from doctor's DB row, 2) from in-memory service
+                    let tokens = doctor?.google_tokens;
+
+                    if (tokens && (tokens.access_token || tokens.refresh_token)) {
+                        googleMeetService.setCredentials(tokens);
+                        meetRecordingService.setCredentials(tokens);
+                        console.log('✅ Using Google tokens from doctor DB');
+                    } else if (!googleMeetService.hasValidCredentials()) {
+                        console.warn('⚠️ No Google tokens available for Meet link creation');
+                    }
+
+                    if (googleMeetService.hasValidCredentials()) {
+                        // Create Google Calendar event with Meet link
+                        const meetingData = {
+                            patientName: patient.full_name,
+                            doctorName: doctor.full_name,
+                            appointmentDate: appointment.appointment_date,
+                            duration: appointment.duration_minutes || 30,
+                            reason: appointment.reason,
+                            patientEmail: patient.email,
+                            doctorEmail: doctor.email
+                        };
+
+                        const meetEvent = await googleMeetService.createMeetingEvent(meetingData);
+                        meetLink = meetEvent.meetLink;
+                        eventId = meetEvent.eventId;
+                        console.log(`✅ Meet link created: ${meetLink}`);
+
+                        // Enable auto-recording
+                        try {
+                            await meetRecordingService.enableAutoRecording(eventId);
+                            console.log('✅ Auto-recording enabled');
+                        } catch (recErr) {
+                            console.warn('⚠️ Auto-recording setup failed (non-fatal):', recErr.message);
+                        }
+
+                        // Start background polling for recording
+                        try {
+                            meetRecordingService.startRecordingPolling(eventId, appointmentId, tokens);
+                            console.log('✅ Recording polling started');
+                        } catch (pollErr) {
+                            console.warn('⚠️ Recording polling failed (non-fatal):', pollErr.message);
+                        }
+                    }
+                } catch (meetErr) {
+                    console.error('⚠️ Meet link creation failed (non-fatal):', meetErr.message);
+                    // Continue with approval even if Meet creation fails
+                }
+            }
+
+            // Update appointment: status + meet_link + google_event_id
+            const updateData = { status: 'confirmed' };
+            if (meetLink) updateData.meet_link = meetLink;
+            if (eventId) updateData.google_event_id = eventId;
+
+            const updated = await supabaseService.updateAppointment(appointmentId, updateData);
+
+            // Send email notification to patient
+            if (patient?.email) {
+                try {
+                    await emailService.sendAppointmentConfirmation({
+                        to: patient.email,
+                        doctorName: doctor?.full_name || 'Your doctor',
+                        patientName: patient.full_name,
+                        appointmentDate: moment(appointment.appointment_date).format('MMMM Do YYYY'),
+                        appointmentTime: moment(appointment.appointment_date).format('h:mm A'),
+                        duration: appointment.duration_minutes || 30,
+                        meetLink: meetLink || undefined,
+                    });
+                    console.log(`✅ Patient email sent to: ${patient.email}`);
+                } catch (e) {
+                    console.error('Email send failed (non-fatal):', e.message);
+                }
+            }
+
+            // Send email to doctor
+            if (doctor?.email && meetLink) {
+                try {
+                    await emailService.sendDoctorNotification({
+                        to: doctor.email,
+                        doctorName: doctor.full_name,
+                        patientName: patient.full_name,
+                        appointmentDate: moment(appointment.appointment_date).format('MMMM Do YYYY'),
+                        appointmentTime: moment(appointment.appointment_date).format('h:mm A'),
+                        meetLink: meetLink,
+                        reason: appointment.reason,
+                        duration: appointment.duration_minutes || 30
+                    });
+                    console.log(`✅ Doctor email sent to: ${doctor.email}`);
+                } catch (e) {
+                    console.error('Doctor email failed (non-fatal):', e.message);
+                }
+            }
+
+            // Notification log
+            const meetInfo = meetLink ? `\n\nJoin Meeting: ${meetLink}` : '';
+            await supabaseService.createNotificationLog({
+                appointment_id: appointmentId,
+                patient_id: appointment.patient_id,
+                channel: 'email',
+                status: 'sent',
+                message_content: `Appointment approved for ${moment(appointment.appointment_date).format('MMMM Do YYYY, h:mm a')}${meetInfo}`,
+            });
+
+            res.status(200).json({
+                success: true,
+                message: meetLink
+                    ? 'Appointment approved with Meet link generated. Emails sent.'
+                    : 'Appointment approved.',
+                data: {
+                    ...updated,
+                    meet_link: meetLink,
+                    google_event_id: eventId,
+                }
+            });
+        } catch (error) {
+            console.error('Error approving appointment:', error);
+            res.status(500).json({ success: false, message: 'Failed to approve appointment', error: error.message });
+        }
+    }
+
+    /**
+     * Reject a pending appointment (doctor action) — sets status to 'cancelled'
+     */
+    async rejectAppointment(req, res) {
+        try {
+            const { appointmentId } = req.params;
+            const { reason } = req.body;
+
+            const appointment = await supabaseService.getAppointmentById(appointmentId);
+            if (!appointment) {
+                return res.status(404).json({ success: false, message: 'Appointment not found' });
+            }
+
+            const updated = await supabaseService.cancelAppointment(appointmentId, reason || 'Rejected by doctor');
+
+            await supabaseService.createNotificationLog({
+                appointment_id: appointmentId,
+                patient_id: appointment.patient_id,
+                channel: 'email',
+                status: 'sent',
+                message_content: `Appointment rejected. Reason: ${reason || 'Rejected by doctor'}`,
+            });
+
+            res.status(200).json({ success: true, message: 'Appointment rejected', data: updated });
+        } catch (error) {
+            console.error('Error rejecting appointment:', error);
+            res.status(500).json({ success: false, message: 'Failed to reject appointment', error: error.message });
+        }
+    }
+
+    /**
+     * Check if Google OAuth tokens are available (checks DB)
+     */
+    async getGoogleTokenStatus(req, res) {
+        try {
+            // Check in-memory first
+            let connected = googleMeetService.hasValidCredentials ? googleMeetService.hasValidCredentials() : false;
+
+            // If not in memory, check the doctor's DB row
+            if (!connected && req.user && req.user.user_type === 'doctor') {
+                const doctor = await supabaseService.getDoctorById(req.user.id);
+                if (doctor?.google_tokens?.refresh_token || doctor?.google_tokens?.access_token) {
+                    // Restore credentials from DB into the service
+                    googleMeetService.setCredentials(doctor.google_tokens);
+                    connected = true;
+                    console.log('✅ Restored Google tokens from DB for doctor:', req.user.id);
+                }
+            }
+
+            res.status(200).json({ success: true, connected, hasRefreshToken: connected });
+        } catch (error) {
+            res.status(200).json({ success: true, connected: false, hasRefreshToken: false });
+        }
+    }
+
+    /**
      * Get all doctors
      */
     async getAllDoctors(req, res) {
@@ -673,33 +885,29 @@ class AppointmentController {
     }
 
     /**
-     * Google OAuth callback
+     * Google OAuth callback (GET — redirected from Google)
+     * Redirects to the frontend /oauth/callback page with the code as a query param
+     * so the React OAuthCallback component can exchange it via the POST endpoint.
      */
     async googleOAuthCallback(req, res) {
         try {
-            const { code } = req.query;
+            const { code, error } = req.query;
+            const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
 
-            if (!code) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Authorization code is required'
-                });
+            if (error) {
+                return res.redirect(`${clientOrigin}/oauth/callback?error=${encodeURIComponent(error)}`);
             }
 
-            const tokens = await googleMeetService.getTokensFromCode(code);
+            if (!code) {
+                return res.redirect(`${clientOrigin}/oauth/callback?error=${encodeURIComponent('No authorization code received')}`);
+            }
 
-            res.status(200).json({
-                success: true,
-                message: 'Google OAuth successful',
-                tokens: tokens
-            });
-        } catch (error) {
-            console.error('Error in OAuth callback:', error);
-            res.status(500).json({
-                success: false,
-                message: 'OAuth authentication failed',
-                error: error.message
-            });
+            // Redirect to the frontend OAuthCallback page which will POST the code back
+            return res.redirect(`${clientOrigin}/oauth/callback?code=${encodeURIComponent(code)}`);
+        } catch (err) {
+            console.error('Error in OAuth callback redirect:', err);
+            const clientOrigin = process.env.CLIENT_ORIGIN || 'http://localhost:5173';
+            return res.redirect(`${clientOrigin}/oauth/callback?error=${encodeURIComponent('OAuth authentication failed')}`);
         }
     }
 
@@ -748,9 +956,21 @@ class AppointmentController {
             
             const tokens = await googleMeetService.getTokensFromCode(code);
 
+            // Save tokens to the doctor's DB row for persistent storage
+            if (req.user && req.user.user_type === 'doctor') {
+                try {
+                    await supabaseService.updateDoctor(req.user.id, {
+                        google_tokens: tokens
+                    });
+                    console.log(`✅ Google tokens saved to doctor ${req.user.id} in database`);
+                } catch (dbErr) {
+                    console.error('⚠️ Failed to save tokens to DB (non-fatal):', dbErr.message);
+                }
+            }
+
             res.status(200).json({
                 success: true,
-                message: 'Google OAuth tokens received successfully. Tokens saved to localStorage.',
+                message: 'Google OAuth tokens received and saved successfully.',
                 tokens: tokens
             });
         } catch (error) {

@@ -1,5 +1,8 @@
 import axios from 'axios';
-import type { LoginPayload, SignupPayload, AuthResponse, DoctorSignupPayload, PatientSignupPayload } from '../types/auth';
+import type {
+  LoginPayload, AuthResponse, DoctorSignupPayload, PatientSignupPayload,
+  GoogleAuthResponse, GoogleDoctorCompletePayload, GooglePatientCompletePayload,
+} from '../types/auth';
 
 const API_BASE = (import.meta as ImportMeta & { env: Record<string, string> }).env.VITE_API_URL ?? 'http://localhost:3000/api';
 
@@ -19,12 +22,20 @@ export const authService = {
   login: (payload: LoginPayload) =>
     api.post<AuthResponse>('/auth/login', payload).then((r) => r.data),
 
-  signup: (payload: SignupPayload) =>
-    api.post<AuthResponse>('/auth/signup', payload).then((r) => r.data),
-
   signupDoctor: (payload: DoctorSignupPayload) =>
     api.post<AuthResponse>('/auth/signup/doctor', payload).then((r) => r.data),
 
   signupPatient: (payload: PatientSignupPayload) =>
     api.post<AuthResponse>('/auth/signup/patient', payload).then((r) => r.data),
+
+  /* ── Google OAuth ─────────────────────────── */
+
+  googleAuth: (credential: string) =>
+    api.post<GoogleAuthResponse>('/auth/google', { credential }).then((r) => r.data),
+
+  googleCompleteDoctor: (payload: GoogleDoctorCompletePayload) =>
+    api.post<AuthResponse>('/auth/google/complete/doctor', payload).then((r) => r.data),
+
+  googleCompletePatient: (payload: GooglePatientCompletePayload) =>
+    api.post<AuthResponse>('/auth/google/complete/patient', payload).then((r) => r.data),
 };

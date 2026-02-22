@@ -37,6 +37,9 @@ class AzureBlobService {
      */
     async uploadFile(fileBuffer, fileName, contentType = 'audio/mpeg') {
         try {
+            // Ensure container exists before uploading
+            await this.initializeContainer();
+
             // Generate unique blob name
             const blobName = `${uuidv4()}-${fileName}`;
             const blockBlobClient = this.containerClient.getBlockBlobClient(blobName);

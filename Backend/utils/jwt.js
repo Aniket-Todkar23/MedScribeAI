@@ -8,12 +8,13 @@ if (!SECRET) {
 }
 
 /**
- * Sign a JWT for a doctor.
- * @param {{ doctor_id: string, email: string }} payload
+ * Sign a JWT.
+ * @param {object} payload
+ * @param {string} [expiresIn] – override default expiry (e.g. '15m')
  * @returns {string} signed token
  */
-const signToken = (payload) =>
-  jwt.sign(payload, SECRET, { expiresIn: EXPIRES });
+const signToken = (payload, expiresIn) =>
+  jwt.sign(payload, SECRET, { expiresIn: expiresIn || EXPIRES });
 
 /**
  * Verify and decode a JWT.

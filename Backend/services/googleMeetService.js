@@ -48,6 +48,15 @@ class GoogleMeetService {
     }
 
     /**
+     * Check if the OAuth2 client has valid credentials set
+     * @returns {boolean}
+     */
+    hasValidCredentials() {
+        const creds = this.oauth2Client.credentials;
+        return !!(creds && (creds.access_token || creds.refresh_token));
+    }
+
+    /**
      * Create a Google Calendar event with Google Meet link
      * @param {Object} appointmentData - Appointment details
      * @returns {Promise<Object>} Created event with Meet link

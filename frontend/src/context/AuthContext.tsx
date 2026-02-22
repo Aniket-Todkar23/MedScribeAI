@@ -1,6 +1,9 @@
 import React, { createContext, useContext, useState, useCallback, useRef, useEffect } from 'react';
 import { authService } from '../services/authService';
-import type { AuthUser, LoginPayload, DoctorSignupPayload, PatientSignupPayload } from '../types/auth';
+import type {
+  AuthUser, LoginPayload, DoctorSignupPayload, PatientSignupPayload,
+  GoogleAuthResponse, GoogleDoctorCompletePayload, GooglePatientCompletePayload,
+} from '../types/auth';
 
 const TOKEN_KEY = 'auth_token';
 const USER_KEY  = 'auth_user';
@@ -14,6 +17,9 @@ interface AuthContextValue {
   login: (payload: LoginPayload) => Promise<AuthUser | null>;
   signupDoctor: (payload: DoctorSignupPayload) => Promise<AuthUser | null>;
   signupPatient: (payload: PatientSignupPayload) => Promise<AuthUser | null>;
+  googleAuth: (credential: string) => Promise<GoogleAuthResponse | null>;
+  googleCompleteDoctor: (payload: GoogleDoctorCompletePayload) => Promise<AuthUser | null>;
+  googleCompletePatient: (payload: GooglePatientCompletePayload) => Promise<AuthUser | null>;
   logout: () => void;
   clearError: () => void;
 }
@@ -66,6 +72,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signupPatient = useCallback((p: PatientSignupPayload) =>
     handleAuth(() => authService.signupPatient(p), 'Sign up failed. Please try again.'), [handleAuth]);
 
+  /* ── Google OAuth ─────────────────────────── */
+
+  const googleAuth = useCallback(async (credential: string): Promise<GoogleAuthResponse | null> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await authService.googleAuth(credential);
+      // If existing user → auto-login
+      if (result.token && result.user) {
+        localStorage.setItem(TOKEN_KEY, result.token);
+        localStorage.setItem(USER_KEY, JSON.stringify(result.user));
+        setUser(result.user);
+      }
+      return result;
+    } catch (err) {
+      const msg = (err as ApiError)?.response?.data?.message ?? 'Google authentication failed.';
+      if (isMounted.current) setError(msg);
+      return null;
+    } finally {
+      if (isMounted.current) setIsLoading(false);
+    }
+  }, []);
+
+  const googleCompleteDoctor = useCallback((p: GoogleDoctorCompletePayload) =>
+    handleAuth(() => authService.googleCompleteDoctor(p), 'Profile completion failed. Please try again.'), [handleAuth]);
+
+  const googleCompletePatient = useCallback((p: GooglePatientCompletePayload) =>
+    handleAuth(() => authService.googleCompletePatient(p), 'Profile completion failed. Please try again.'), [handleAuth]);
+
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
@@ -75,7 +110,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const clearError = useCallback(() => setError(null), []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, error, login, signupDoctor, signupPatient, logout, clearError }}>
+    <AuthContext.Provider value={{
+      user, isLoading, error,
+      login, signupDoctor, signupPatient,
+      googleAuth, googleCompleteDoctor, googleCompletePatient,
+      logout, clearError,
+    }}>
       {children}
     </AuthContext.Provider>
   );

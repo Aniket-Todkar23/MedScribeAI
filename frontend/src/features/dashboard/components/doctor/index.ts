@@ -7,4 +7,5 @@ export { default as PatientRecords } from './PatientRecords';
 export { default as LiveTranscription } from './LiveTranscription';
 export { default as AIAssistantPanel } from './AIAssistantPanel';
 export { default as ReportsTab } from './ReportsTab';
+export { default as DoctorAppointmentsTab } from './DoctorAppointmentsTab';
 export * from './types';

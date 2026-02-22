@@ -8,6 +8,7 @@ const azureBlobService = require('./azureBlobService');
 class RecordingService {
     constructor() {
         this.tempDir = path.join(__dirname, '../temp');
+        this.ffmpegAvailable = null; // lazy check
         this.ensureTempDir();
     }
 
@@ -20,6 +21,22 @@ class RecordingService {
         } catch (error) {
             console.error('Error creating temp directory:', error.message);
         }
+    }
+
+    /**
+     * Check if ffmpeg is available on the system
+     */
+    async checkFfmpeg() {
+        if (this.ffmpegAvailable !== null) return this.ffmpegAvailable;
+        return new Promise((resolve) => {
+            require('child_process').exec('ffmpeg -version', (err) => {
+                this.ffmpegAvailable = !err;
+                if (!this.ffmpegAvailable) {
+                    console.warn('⚠️ ffmpeg not found — recordings will be uploaded in original format without MP3 conversion');
+                }
+                resolve(this.ffmpegAvailable);
+            });
+        });
     }
 
     /**
@@ -86,19 +103,36 @@ class RecordingService {
                 throw new Error(`File size ${fileSizeMB.toFixed(2)}MB exceeds maximum allowed ${config.recording.maxFileSizeMB}MB`);
             }
 
-            // Convert to MP3
-            console.log('Converting to MP3...');
-            const mp3Buffer = await this.convertToMp3(fileBuffer, filename);
+            let uploadBuffer = fileBuffer;
+            let uploadFilename;
+            let uploadContentType;
+            let outputFormat;
 
-            // Generate MP3 filename
-            const mp3Filename = `recording-${metadata.appointmentId || uuidv4()}-${Date.now()}.mp3`;
+            const hasFfmpeg = await this.checkFfmpeg();
+
+            if (hasFfmpeg) {
+                // Convert to MP3
+                console.log('Converting to MP3...');
+                uploadBuffer = await this.convertToMp3(fileBuffer, filename);
+                uploadFilename = `recording-${metadata.appointmentId || uuidv4()}-${Date.now()}.mp3`;
+                uploadContentType = 'audio/mpeg';
+                outputFormat = 'mp3';
+            } else {
+                // Upload original format directly (skip ffmpeg conversion)
+                const ext = path.extname(filename).toLowerCase() || '.webm';
+                uploadFilename = `recording-${metadata.appointmentId || uuidv4()}-${Date.now()}${ext}`;
+                const mimeMap = { '.webm': 'audio/webm', '.wav': 'audio/wav', '.mp4': 'video/mp4', '.ogg': 'audio/ogg', '.mp3': 'audio/mpeg' };
+                uploadContentType = mimeMap[ext] || 'audio/webm';
+                outputFormat = ext.replace('.', '');
+                console.log(`Uploading original ${outputFormat} format (ffmpeg not available for conversion)`);
+            }
 
             // Upload to Azure Blob Storage
             console.log('Uploading to Azure Blob Storage...');
             const uploadResult = await azureBlobService.uploadFile(
-                mp3Buffer,
-                mp3Filename,
-                'audio/mpeg'
+                uploadBuffer,
+                uploadFilename,
+                uploadContentType
             );
 
             return {
@@ -106,7 +140,7 @@ class RecordingService {
                 recordingUrl: uploadResult.sasUrl,
                 blobName: uploadResult.blobName,
                 size: uploadResult.size,
-                format: 'mp3',
+                format: outputFormat,
                 uploadedAt: uploadResult.uploadedAt,
                 metadata: metadata
             };

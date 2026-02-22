@@ -13,6 +13,7 @@ import {
   LiveTranscription,
   AIAssistantPanel,
   ReportsTab,
+  DoctorAppointmentsTab,
   examplePatient,
 } from "./components/doctor";
 import type { DoctorTabId, ExamplePatient } from "./components/doctor";
@@ -157,6 +158,9 @@ const DoctorDashboard = () => {
           zIndex: 1
         }}
       >
+        {/* Appointments tab */}
+        {activeTab === "appointments" && <DoctorAppointmentsTab />}
+
         {/* Prescription tab */}
         {activeTab === "prescription" && (
           <PrescriptionTab

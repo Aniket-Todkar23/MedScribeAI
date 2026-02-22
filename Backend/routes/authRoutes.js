@@ -1,6 +1,6 @@
 const { Router } = require('express');
 const { body }   = require('express-validator');
-const { doctorSignup, patientSignup, login } = require('../controllers/authController');
+const { doctorSignup, patientSignup, login, googleAuth, googleCompleteDoctor, googleCompletePatient } = require('../controllers/authController');
 
 const router = Router();
 
@@ -38,5 +38,10 @@ const loginRules = [
 router.post('/signup/doctor',  doctorRules,  doctorSignup);
 router.post('/signup/patient', patientRules, patientSignup);
 router.post('/login',          loginRules,   login);
+
+/* ── Google OAuth ─────────────────────────── */
+router.post('/google',                  googleAuth);
+router.post('/google/complete/doctor',  googleCompleteDoctor);
+router.post('/google/complete/patient', googleCompletePatient);
 
 module.exports = router;

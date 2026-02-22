@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { GoogleSignInButton } from './GoogleSignInButton';
 
 interface LoginFormProps {
   onSubmit: (email: string, password: string) => void;
   onToggle: () => void;
+  onGoogleCredential?: (credential: string) => void;
   isLoading: boolean;
   error: string | null;
 }
@@ -31,6 +33,7 @@ const LoadingDots = () => (
 export const LoginForm: React.FC<LoginFormProps> = ({
   onSubmit,
   onToggle,
+  onGoogleCredential,
   isLoading,
   error,
 }) => {
@@ -117,6 +120,18 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           {isLoading ? <LoadingDots /> : 'Sign in'}
         </button>
       </form>
+
+      {/* ── Divider + Google Sign-In ── */}
+      {onGoogleCredential && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '18px 0' }}>
+            <div style={{ flex: 1, height: 1, background: 'var(--color-border)' }} />
+            <span style={{ fontSize: 12, color: 'var(--color-text-muted)', fontWeight: 500 }}>or</span>
+            <div style={{ flex: 1, height: 1, background: 'var(--color-border)' }} />
+          </div>
+          <GoogleSignInButton onCredential={onGoogleCredential} text="signin_with" disabled={isLoading} />
+        </>
+      )}
 
       <p style={{ fontSize: 13.5, color: 'var(--color-text-muted)', textAlign: 'center', marginTop: 22 }}>
         Don't have an account?{' '}

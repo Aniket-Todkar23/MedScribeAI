@@ -293,6 +293,26 @@ class SupabaseService {
     // =============================================
 
     /**
+     * Update doctor record
+     */
+    async updateDoctor(doctorId, updateData) {
+        try {
+            const { data, error } = await this.supabase
+                .from('doctors')
+                .update(updateData)
+                .eq('doctor_id', doctorId)
+                .select()
+                .single();
+
+            if (error) throw error;
+            return data;
+        } catch (error) {
+            console.error('Error updating doctor:', error.message);
+            throw error;
+        }
+    }
+
+    /**
      * Get doctor by ID
      */
     async getDoctorById(doctorId) {

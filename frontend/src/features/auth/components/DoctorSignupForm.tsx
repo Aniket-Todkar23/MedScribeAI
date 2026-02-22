@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import type { DoctorSignupPayload } from '../../../types/auth';
 
+interface GooglePrefill { name: string; email: string; }
+
 interface DoctorSignupFormProps {
   onSubmit: (payload: DoctorSignupPayload) => void;
   onToggle: () => void;
   onBack: () => void;
   isLoading: boolean;
   error: string | null;
+  /** When set, hides password fields and pre-fills name/email from Google. */
+  googleProfile?: GooglePrefill;
 }
 
 const EyeIcon = () => (
@@ -37,10 +41,11 @@ const fieldGroupStyle: React.CSSProperties = { display: 'flex', flexDirection: '
 const labelStyle: React.CSSProperties = { fontSize: '11.5px', fontWeight: 700, color: 'var(--color-text-secondary)', letterSpacing: '0.06em', textTransform: 'uppercase' };
 
 export const DoctorSignupForm: React.FC<DoctorSignupFormProps> = ({
-  onSubmit, onToggle, onBack, isLoading, error,
+  onSubmit, onToggle, onBack, isLoading, error, googleProfile,
 }) => {
-  const [fullName, setFullName]             = useState('');
-  const [email, setEmail]                   = useState('');
+  const isGoogle = !!googleProfile;
+  const [fullName, setFullName]             = useState(googleProfile?.name ?? '');
+  const [email, setEmail]                   = useState(googleProfile?.email ?? '');
   const [licenseNumber, setLicenseNumber]   = useState('');
   const [phone, setPhone]                   = useState('');
   const [specialization, setSpecialization] = useState('');
@@ -52,13 +57,15 @@ export const DoctorSignupForm: React.FC<DoctorSignupFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password.length < 8) { setLocalError('Password must be at least 8 characters.'); return; }
-    if (password !== confirm) { setLocalError("Passwords don't match."); return; }
+    if (!isGoogle) {
+      if (password.length < 8) { setLocalError('Password must be at least 8 characters.'); return; }
+      if (password !== confirm) { setLocalError("Passwords don't match."); return; }
+    }
     setLocalError('');
     onSubmit({
       full_name:      fullName,
-      email,
-      password,
+      email:          isGoogle ? googleProfile!.email : email,
+      password:       isGoogle ? '__google__' : password,   // placeholder — ignored for Google flow
       license_number: licenseNumber,
       phone:          phone          || undefined,
       specialization: specialization || undefined,
@@ -81,11 +88,17 @@ export const DoctorSignupForm: React.FC<DoctorSignupFormProps> = ({
       {/* Header */}
       <div style={{ marginBottom: 28 }}>
         <h1 style={{ fontSize: 27, fontWeight: 700, color: 'var(--color-text-primary)', letterSpacing: '-0.6px', margin: '0 0 7px 0', lineHeight: 1.2 }}>
-          Doctor Registration
+          {isGoogle ? 'Complete Your Profile' : 'Doctor Registration'}
         </h1>
         <p style={{ fontSize: 14, color: 'var(--color-text-muted)', margin: 0, lineHeight: 1.55 }}>
-          Create your professional account.
+          {isGoogle ? 'Fill in your professional details to finish setup.' : 'Create your professional account.'}
         </p>
+        {isGoogle && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 12, padding: '8px 12px', background: 'var(--color-surface)', borderRadius: 10, border: '1px solid var(--color-border)' }}>
+            <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#FBBC05" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            <span style={{ fontSize: 13, color: 'var(--color-text-secondary)', fontWeight: 500 }}>{googleProfile!.email}</span>
+          </div>
+        )}
       </div>
 
       {/* Form */}
@@ -109,7 +122,9 @@ export const DoctorSignupForm: React.FC<DoctorSignupFormProps> = ({
           <label style={labelStyle}>Email address <span style={{ color: 'var(--color-red)' }}>*</span></label>
           <input type="email" placeholder="you@example.com"
             value={email} onChange={(e) => setEmail(e.target.value)}
-            required autoComplete="email" />
+            required autoComplete="email"
+            readOnly={isGoogle}
+            style={isGoogle ? { background: 'var(--color-surface)', color: 'var(--color-text-muted)', cursor: 'not-allowed' } : undefined} />
         </div>
 
         <div style={fieldGroupStyle}>
@@ -119,29 +134,33 @@ export const DoctorSignupForm: React.FC<DoctorSignupFormProps> = ({
             required maxLength={50} />
         </div>
 
-        <div style={fieldGroupStyle}>
-          <label style={labelStyle}>Password <span style={{ color: 'var(--color-red)' }}>*</span></label>
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <input type={showPassword ? 'text' : 'password'}
-              style={{ paddingRight: 42 }}
-              placeholder="At least 8 characters"
-              value={password} onChange={(e) => setPassword(e.target.value)}
-              required autoComplete="new-password" />
-            <button type="button"
-              style={{ position: 'absolute', right: 4, background: 'none', border: 'none', padding: 4, cursor: 'pointer', color: 'var(--color-text-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 0 }}
-              onClick={() => setShowPassword((s) => !s)} tabIndex={-1}
-              aria-label={showPassword ? 'Hide password' : 'Show password'}>
-              {showPassword ? <EyeOffIcon /> : <EyeIcon />}
-            </button>
-          </div>
-        </div>
+        {!isGoogle && (
+          <>
+            <div style={fieldGroupStyle}>
+              <label style={labelStyle}>Password <span style={{ color: 'var(--color-red)' }}>*</span></label>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <input type={showPassword ? 'text' : 'password'}
+                  style={{ paddingRight: 42 }}
+                  placeholder="At least 8 characters"
+                  value={password} onChange={(e) => setPassword(e.target.value)}
+                  required autoComplete="new-password" />
+                <button type="button"
+                  style={{ position: 'absolute', right: 4, background: 'none', border: 'none', padding: 4, cursor: 'pointer', color: 'var(--color-text-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 0 }}
+                  onClick={() => setShowPassword((s) => !s)} tabIndex={-1}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}>
+                  {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                </button>
+              </div>
+            </div>
 
-        <div style={fieldGroupStyle}>
-          <label style={labelStyle}>Confirm password <span style={{ color: 'var(--color-red)' }}>*</span></label>
-          <input type="password" placeholder="••••••••"
-            value={confirm} onChange={(e) => setConfirm(e.target.value)}
-            required autoComplete="new-password" />
-        </div>
+            <div style={fieldGroupStyle}>
+              <label style={labelStyle}>Confirm password <span style={{ color: 'var(--color-red)' }}>*</span></label>
+              <input type="password" placeholder="••••••••"
+                value={confirm} onChange={(e) => setConfirm(e.target.value)}
+                required autoComplete="new-password" />
+            </div>
+          </>
+        )}
 
         <p style={sectionLabelStyle}>Professional Info <span style={{ fontWeight: 400, color: 'var(--color-text-subtle)', textTransform: 'none', fontSize: 11 }}>(optional)</span></p>
 
@@ -164,7 +183,7 @@ export const DoctorSignupForm: React.FC<DoctorSignupFormProps> = ({
         </div>
 
         <button type="submit" className="btn-primary btn-full btn-lg" disabled={isLoading} style={{ marginTop: 4 }}>
-          {isLoading ? <LoadingDots /> : 'Create Account'}
+          {isLoading ? <LoadingDots /> : isGoogle ? 'Complete Registration' : 'Create Account'}
         </button>
       </form>
 

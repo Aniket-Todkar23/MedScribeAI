@@ -129,14 +129,14 @@ const DoctorAppointmentsTab: React.FC = () => {
 
   const filtered = appointments.filter((a) => {
     if (filterTab === "all") return true;
-    if (filterTab === "pending") return a.status === "pending";
+    if (filterTab === "pending") return a.status === "pending" || a.status === "scheduled";
     if (filterTab === "confirmed") return a.status === "confirmed" || a.status === "in_progress";
     if (filterTab === "completed") return a.status === "completed";
     return true;
   });
 
   const counts = {
-    pending: appointments.filter((a) => a.status === "pending").length,
+    pending: appointments.filter((a) => a.status === "pending" || a.status === "scheduled").length,
     confirmed: appointments.filter((a) => a.status === "confirmed" || a.status === "in_progress").length,
     completed: appointments.filter((a) => a.status === "completed").length,
     all: appointments.length,
@@ -281,7 +281,7 @@ const DoctorAppointmentsTab: React.FC = () => {
             {filtered.map((apt) => {
               const sc = statusColors[apt.status] || statusColors.pending;
               const date = new Date(apt.appointment_date);
-              const isPending = apt.status === "pending";
+              const isPending = apt.status === "pending" || apt.status === "scheduled";
               const isConfirmed = apt.status === "confirmed";
               const isRejectOpen = rejectingId === apt.appointment_id;
 
