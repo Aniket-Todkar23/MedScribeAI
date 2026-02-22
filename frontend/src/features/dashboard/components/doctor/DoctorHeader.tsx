@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../../hooks/useAuth";
 import {
   Activity, LogOut, ChevronsLeft, ChevronsRight,
   Home, Menu, X, Sparkles
@@ -28,6 +29,8 @@ const DoctorHeader = ({
   mobileSidebarOpen = false, setMobileSidebarOpen,
   mobileAiPanelOpen = false, setMobileAiPanelOpen,
 }: DoctorHeaderProps) => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   return (
     <header 
       style={{
@@ -220,21 +223,23 @@ const DoctorHeader = ({
             }}>
               Dr. Hambire
             </span>
-            <Link
-              to="/"
+            <button
+              onClick={() => {
+                logout();
+                navigate("/");
+              }}
               style={{
                 display: 'flex', alignItems: 'center', gap: '5px',
                 padding: '6px 12px', borderRadius: '8px',
                 border: '1px solid rgba(239,68,68,0.15)', backgroundColor: 'white',
                 color: '#EF4444', fontSize: '12px', fontWeight: 600,
-                cursor: 'pointer', textDecoration: 'none',
-                transition: 'all 0.2s'
+                cursor: 'pointer', transition: 'all 0.2s'
               }}
               onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(239,68,68,0.04)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'white'; }}
             >
               <LogOut size={14} /> Logout
-            </Link>
+            </button>
           </div>
         )}
       </div>

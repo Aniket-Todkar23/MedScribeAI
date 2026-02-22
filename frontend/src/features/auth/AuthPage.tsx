@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
+import React, { useState, useCallback } from 'react';
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { LoginForm } from './components/LoginForm';
 import { DoctorSignupForm } from './components/DoctorSignupForm';
@@ -40,15 +40,9 @@ export const AuthPage: React.FC = () => {
   }, []);
 
   const switchMode = useCallback((next: Mode) => {
-    if (isExiting) return;
     clearError();
-    setIsExiting(true);
-    setTimeout(() => {
-      if (!isMounted.current) return;
-      setMode(next);
-      setIsExiting(false);
-    }, 350);
-  }, [isExiting, clearError]);
+    setMode(next);
+  }, [clearError]);
 
   const handleToggleLogin = useCallback(() => {
     setGooglePendingToken(null);
@@ -127,9 +121,8 @@ export const AuthPage: React.FC = () => {
     }
   })();
 
-  const formAnimation = isExiting
-    ? 'authFormExit 0.35s cubic-bezier(0.55,0.06,0.68,0.19) both'
-    : 'authFormEnter 0.42s cubic-bezier(0.25,0.46,0.45,0.94) both';
+  const formAnimation = 'authFormEnter 0.42s cubic-bezier(0.25,0.46,0.45,0.94) both';
+
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(145deg, #eef2ff 0%, #f8fafc 45%, #fdf4ff 100%)', padding: 24 }}>

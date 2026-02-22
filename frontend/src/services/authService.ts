@@ -38,4 +38,13 @@ export const authService = {
 
   googleCompletePatient: (payload: GooglePatientCompletePayload) =>
     api.post<AuthResponse>('/auth/google/complete/patient', payload).then((r) => r.data),
+
+  logout: () => {
+    localStorage.removeItem('auth_token');
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+    });
+  },
 };

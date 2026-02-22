@@ -102,8 +102,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     handleAuth(() => authService.googleCompletePatient(p), 'Profile completion failed. Please try again.'), [handleAuth]);
 
   const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
+    localStorage.removeItem(USER_KEY); // Remove user data
+    authService.logout(); // Clears token & cookies
     setUser(null);
   }, []);
 

@@ -12,10 +12,12 @@
   "dependencies": {
     "@lottiefiles/dotlottie-react": "^0.18.1",
     "@radix-ui/react-slot": "^1.2.4",
+    "@react-oauth/google": "^0.13.4",
     "axios": "^1.13.5",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.34.3",
+    "google-auth-library": "^10.5.0",
     "lottie-react": "^2.4.1",
     "lucide-react": "^0.575.0",
     "react": "^19.2.0",

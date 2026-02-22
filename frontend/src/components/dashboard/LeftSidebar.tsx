@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Activity, LogOut } from "lucide-react";
 import type { NavItem } from "./types";
+import { useAuth } from "../../context/AuthContext";
 
 interface LeftSidebarProps {
   navItems: NavItem[];
@@ -11,6 +12,14 @@ interface LeftSidebarProps {
 }
 
 const LeftSidebar = ({ navItems, activeTab, onTabChange, roleBadge }: LeftSidebarProps) => {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
+
   return (
     <aside className="hidden w-64 flex-shrink-0 border-r border-border bg-card lg:flex lg:flex-col">
       <div className="flex h-14 items-center gap-2 border-b border-border px-5">
@@ -37,8 +46,13 @@ const LeftSidebar = ({ navItems, activeTab, onTabChange, roleBadge }: LeftSideba
         ))}
       </nav>
       <div className="border-t border-border p-3">
-        <Button variant="ghost" size="sm" asChild className="w-full justify-start gap-2 text-muted-foreground">
-          <Link to="/"><LogOut className="h-4 w-4" /> Logout</Link>
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="w-full justify-start gap-2 text-muted-foreground"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-4 w-4" /> Logout
         </Button>
       </div>
     </aside>

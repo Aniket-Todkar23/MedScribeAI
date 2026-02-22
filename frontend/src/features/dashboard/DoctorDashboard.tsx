@@ -275,10 +275,10 @@ const DoctorDashboard = () => {
         )}
 
         {/* Analytics overview */}
-        {!patientFound && activeTab === "analytics" && <AnalyticsOverview />}
+        {activeTab === "analytics" && <AnalyticsOverview />}
 
-        {/* Patient search bar (for analytics, search, and reports tabs) */}
-        {(activeTab === "analytics" || activeTab === "search" || activeTab === "reports") && (
+        {/* Patient search bar (for search and reports tabs) */}
+        {(activeTab === "search" || activeTab === "reports") && (
           <PatientSearchBar
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
@@ -289,7 +289,7 @@ const DoctorDashboard = () => {
         )}
 
         {/* Patient records + transcription OR empty state */}
-        {(activeTab === "analytics" || activeTab === "search") && (
+        {(activeTab === "search") && (
           <>
             {patientFound ? (
               <motion.div
@@ -377,7 +377,6 @@ const DoctorDashboard = () => {
                 </div>
               </motion.div>
             ) : (
-              activeTab !== "analytics" && (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -426,7 +425,6 @@ const DoctorDashboard = () => {
                     <ChevronLeft size={16} /> Back to Dashboard
                   </button>
                 </motion.div>
-              )
             )}
           </>
         )}

@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../hooks/useAuth";
 import {
   Activity, LogOut, ChevronsLeft, ChevronsRight, Home, Menu, X
 } from "lucide-react";
@@ -27,6 +28,8 @@ const PatientHeader = ({
   activeTab, setActiveTab,
   isMobile, sidebarOpen, setSidebarOpen,
 }: PatientHeaderProps) => {
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   return (
     <header
       style={{
@@ -182,8 +185,11 @@ const PatientHeader = ({
             Patient
           </span>
         )}
-        <Link
-          to="/"
+        <button
+          onClick={() => {
+            logout();
+            navigate("/");
+          }}
           style={{
             display: "flex",
             alignItems: "center",
@@ -196,8 +202,8 @@ const PatientHeader = ({
             fontSize: "12px",
             fontWeight: 600,
             cursor: "pointer",
-            textDecoration: "none",
             transition: "all 0.2s",
+            alignSelf: "center", // ensure vertical centering like previous flex item
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.backgroundColor = "rgba(239,68,68,0.04)";
@@ -208,7 +214,7 @@ const PatientHeader = ({
         >
           <LogOut size={14} />
           {!isMobile && " Logout"}
-        </Link>
+        </button>
       </div>
     </header>
   );
