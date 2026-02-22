@@ -34,6 +34,11 @@ module.exports = {
         serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY
     },
 
+    // AI Backend (FastAPI) Configuration
+    ai: {
+        baseUrl: process.env.AI_BACKEND_URL || 'http://localhost:8000/api/v1',
+    },
+
     // Server Configuration
     server: {
         port: process.env.PORT || 3000,

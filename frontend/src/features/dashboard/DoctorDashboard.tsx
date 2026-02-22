@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { DotLottieReact } from "@lottiefiles/dotlottie-react";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Plus, Loader2 } from "lucide-react";
 import { useIsMobile } from "../../hooks/useMediaQuery";
+import { useAudioRecorder } from "../../hooks/useAudioRecorder";
 import {
   DoctorHeader,
   DoctorSidebar,
@@ -18,11 +19,20 @@ import {
 } from "./components/doctor";
 import type { DoctorTabId, ExamplePatient } from "./components/doctor";
 import { searchPatientByPhone, storePatientData, getStoredPatientData, clearPatientData, type Patient } from "../../services/patientService";
+import {
+  createConsultation,
+  finaliseConsultation,
+  type DoctorSummary,
+  type PatientSummary,
+  type ConsultationEntities,
+  type IcdCode,
+  type SoapNote,
+} from "../../services/consultationService";
 
 const DoctorDashboard = () => {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [aiPanelCollapsed, setAiPanelCollapsed] = useState(false);
-  
+
   // Mobile states
   const isMobile = useIsMobile();
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -30,12 +40,40 @@ const DoctorDashboard = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [patientFound, setPatientFound] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
-  const [transcript, setTranscript] = useState("");
   const [activeTab, setActiveTab] = useState<DoctorTabId>("analytics");
   const [currentPatient, setCurrentPatient] = useState<Patient | ExamplePatient | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
+
+  // ── Consultation state ──
+  const [consultationId, setConsultationId] = useState<string | null>(null);
+  const [isCreatingConsultation, setIsCreatingConsultation] = useState(false);
+  const [isFinalising, setIsFinalising] = useState(false);
+  const [isConsultationComplete, setIsConsultationComplete] = useState(false);
+
+  // Results from finalise
+  const [doctorSummary, setDoctorSummary] = useState<DoctorSummary | null>(null);
+  const [patientSummary, setPatientSummary] = useState<PatientSummary | null>(null);
+  const [entities, setEntities] = useState<ConsultationEntities | null>(null);
+  const [icdCodes, setIcdCodes] = useState<IcdCode[] | null>(null);
+  const [soapNote, setSoapNote] = useState<SoapNote | null>(null);
+
+  // Audio recorder hook
+  const audioRecorder = useAudioRecorder({
+    batchIntervalMs: 30000,
+    onError: (err) => {
+      console.error('Recording error:', err);
+      alert('Recording error: ' + err.message);
+    },
+  });
+
+  // Get doctor ID from localStorage
+  const getDoctorId = (): string => {
+    try {
+      const authUser = JSON.parse(localStorage.getItem('auth_user') || '{}');
+      return authUser.user_id || '';
+    } catch { return ''; }
+  };
 
   // Load patient from localStorage on mount
   useEffect(() => {
@@ -53,13 +91,10 @@ const DoctorDashboard = () => {
       setSearchError('Please enter a phone number');
       return;
     }
-
     setIsSearching(true);
     setSearchError(null);
-    
     try {
       const result = await searchPatientByPhone(searchQuery.trim());
-      
       if (result.success && result.patient) {
         setCurrentPatient(result.patient);
         setPatientFound(true);
@@ -80,27 +115,75 @@ const DoctorDashboard = () => {
     }
   };
 
-  const handleRecording = () => {
-    setIsRecording(!isRecording);
-    if (!isRecording) {
-      setTranscript(
-        "Doctor: Good afternoon, John. How are you feeling today?\n\n" +
-        "Patient: Hi Doctor. I've been having some chest discomfort again, especially when I climb stairs.\n\n" +
-        "Doctor: I see. Can you describe the discomfort? Is it sharp, dull, or pressure-like?\n\n" +
-        "Patient: It's more like a pressure sensation, right in the center of my chest. It goes away when I rest for a few minutes.\n\n" +
-        "Doctor: How long does it typically last?\n\n" +
-        "Patient: Maybe 2-3 minutes. Sometimes my left arm feels a bit tingly too.\n\n" +
-        "Doctor: Have you been taking your medications regularly?\n\n" +
-        "Patient: Yes, I have the metformin twice a day and the atorvastatin at night. I also have the nitroglycerin you prescribed last visit.\n\n" +
-        "Doctor: Have you needed to use the nitroglycerin?\n\n" +
-        "Patient: Twice this week when the chest pressure was really uncomfortable.\n\n" +
-        "Doctor: Let me check your blood pressure and heart rate...\n\n" +
-        "[Measuring vitals]\n\n" +
-        "Doctor: Your BP is 138 over 88, slightly elevated. Heart rate is 82. I'd like to order a stress test to evaluate your heart function under exertion. We should also review your most recent lab results."
-      );
-    } else {
-      setTranscript("");
+  // ── Create new consultation ──
+  const handleNewConsultation = useCallback(async () => {
+    if (!currentPatient) return;
+    const doctorId = getDoctorId();
+    if (!doctorId) {
+      alert('Doctor ID not found. Please log in again.');
+      return;
     }
+    setIsCreatingConsultation(true);
+    // Reset previous results
+    resetConsultationState();
+
+    try {
+      const resp = await createConsultation(doctorId, currentPatient.patient_id);
+      setConsultationId(resp.consultation_id);
+    } catch (err: any) {
+      console.error('Create consultation error:', err);
+      alert('Failed to create consultation: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setIsCreatingConsultation(false);
+    }
+  }, [currentPatient]);
+
+  // ── Toggle recording ──
+  const handleRecording = useCallback(async () => {
+    if (!consultationId) {
+      alert('Please create a consultation first.');
+      return;
+    }
+    if (audioRecorder.isRecording) {
+      await audioRecorder.stopRecording();
+    } else {
+      await audioRecorder.startRecording(consultationId);
+    }
+  }, [consultationId, audioRecorder]);
+
+  // ── Finalise consultation ──
+  const handleFinalise = useCallback(async () => {
+    if (!consultationId) return;
+    setIsFinalising(true);
+    try {
+      const resp = await finaliseConsultation(consultationId);
+      setDoctorSummary(resp.doctor_summary);
+      setPatientSummary(resp.patient_summary);
+      setEntities(resp.entities);
+      setIcdCodes(resp.icd_codes);
+      setSoapNote(resp.soap_note);
+      setIsConsultationComplete(true);
+      // Expand AI panel to show results
+      setAiPanelCollapsed(false);
+      if (isMobile) setMobileAiPanelOpen(true);
+    } catch (err: any) {
+      console.error('Finalise error:', err);
+      alert('Failed to generate report: ' + (err.response?.data?.message || err.message));
+    } finally {
+      setIsFinalising(false);
+    }
+  }, [consultationId, isMobile]);
+
+  // Reset consultation state
+  const resetConsultationState = () => {
+    setConsultationId(null);
+    setIsConsultationComplete(false);
+    setDoctorSummary(null);
+    setPatientSummary(null);
+    setEntities(null);
+    setIcdCodes(null);
+    setSoapNote(null);
+    setIsFinalising(false);
   };
 
   return (
@@ -238,17 +321,60 @@ const DoctorDashboard = () => {
                   onBack={() => {
                     setPatientFound(false);
                     setSearchQuery("");
-                    setTranscript("");
-                    setIsRecording(false);
                     setCurrentPatient(null);
                     clearPatientData();
+                    resetConsultationState();
                   }}
                 />
-                <LiveTranscription
-                  isRecording={isRecording}
-                  transcript={transcript}
-                  onToggleRecording={handleRecording}
-                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {/* New Consultation button */}
+                  {!consultationId && !isConsultationComplete && (
+                    <button
+                      onClick={handleNewConsultation}
+                      disabled={isCreatingConsultation}
+                      style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                        padding: '12px 20px', borderRadius: '12px', border: 'none',
+                        background: isCreatingConsultation
+                          ? 'rgba(31,159,163,0.3)'
+                          : 'linear-gradient(135deg, #1F9FA3, #17858A)',
+                        color: 'white', fontSize: '14px', fontWeight: 600,
+                        cursor: isCreatingConsultation ? 'not-allowed' : 'pointer',
+                        boxShadow: '0 2px 8px rgba(31,159,163,0.25)',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {isCreatingConsultation ? (
+                        <><Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Creating...</>
+                      ) : (
+                        <><Plus size={16} /> New Consultation</>
+                      )}
+                    </button>
+                  )}
+                  {/* Consultation created indicator */}
+                  {consultationId && !isConsultationComplete && (
+                    <div style={{
+                      padding: '8px 14px', borderRadius: '10px',
+                      backgroundColor: 'rgba(31,159,163,0.06)',
+                      border: '1px solid rgba(31,159,163,0.15)',
+                      fontSize: '11px', color: '#1F9FA3', fontWeight: 500,
+                      textAlign: 'center'
+                    }}>
+                      Consultation #{consultationId.slice(0, 8)} · Ready
+                    </div>
+                  )}
+                  <LiveTranscription
+                    isRecording={audioRecorder.isRecording}
+                    transcript={audioRecorder.transcript}
+                    onToggleRecording={handleRecording}
+                    onFinalise={handleFinalise}
+                    isSending={audioRecorder.isSending}
+                    batchIndex={audioRecorder.batchIndex}
+                    isFinalising={isFinalising}
+                    isComplete={isConsultationComplete}
+                    hasConsultation={!!consultationId}
+                  />
+                </div>
               </motion.div>
             ) : (
               activeTab !== "analytics" && (
@@ -352,6 +478,13 @@ const DoctorDashboard = () => {
         setAiPanelCollapsed={setAiPanelCollapsed}
         isMobile={isMobile}
         isOpen={mobileAiPanelOpen}
+        consultationId={consultationId}
+        doctorSummary={doctorSummary}
+        patientSummary={patientSummary}
+        entities={entities}
+        icdCodes={icdCodes}
+        soapNote={soapNote}
+        isComplete={isConsultationComplete}
       />
     </div>
   );

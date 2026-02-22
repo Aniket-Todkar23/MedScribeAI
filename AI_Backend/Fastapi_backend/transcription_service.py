@@ -79,8 +79,11 @@ class AudioExtractor:
 
 class WhisperTranscriber:
     """
-    Transcribes audio using OpenAI Whisper.
+    Transcribes audio using faster-whisper (CTranslate2 backend).
     Returns segments with timestamps for alignment with diarization.
+
+    Uses CTranslate2 instead of raw PyTorch, so it is immune to
+    torch version-specific tensor-reshape bugs and runs faster on CPU.
     """
 
     def __init__(self, model_size: str = "base", language: Optional[str] = None):
@@ -90,49 +93,106 @@ class WhisperTranscriber:
 
     def load(self):
         if self._model is None:
-            import whisper
-            logger.info(f"Loading Whisper model: {self.model_size}")
-            self._model = whisper.load_model(self.model_size)
+            from faster_whisper import WhisperModel
+            import torch
+
+            device = "cuda" if torch.cuda.is_available() else "cpu"
+            compute_type = "float16" if device == "cuda" else "int8"
+
+            logger.info(
+                f"Loading faster-whisper model: {self.model_size} "
+                f"(device={device}, compute={compute_type})"
+            )
+            self._model = WhisperModel(
+                self.model_size, device=device, compute_type=compute_type
+            )
             logger.info("Whisper loaded.")
 
-    def transcribe(self, audio_path: str) -> dict:
+    def transcribe(self, audio_input) -> dict:
         """
-        Returns Whisper result dict with:
+        Returns dict compatible with openai-whisper format:
           - result['text']:     full transcript string
           - result['segments']: list of {start, end, text, words:[{word, start, end}]}
         """
         if not self._model:
             self.load()
 
-        logger.info("Transcribing with Whisper...")
-        import torch
+        logger.info("Transcribing with faster-whisper...")
+        # Use word_timestamps=True to get better sentence boundaries
+        # condition_on_previous_text=False prevents hallucination loops
         options = {
-            "word_timestamps": True,   # needed for diarization alignment
-            "verbose": False,
-            "fp16": torch.cuda.is_available(),  # fp16 only on CUDA; avoids CPU issues
+            "beam_size": 2, 
+            "word_timestamps": True, 
+            "vad_filter": True,
+            "condition_on_previous_text": False
         }
         if self.language:
             options["language"] = self.language
 
-        # Load audio using whisper's built-in ffmpeg loader
-        import whisper
-        data = whisper.load_audio(audio_path)
+        segments_gen, info = self._model.transcribe(audio_input, **options)
 
-        if len(data) == 0:
-            logger.warning("Audio file is empty or could not be decoded.")
-            return {"text": "", "segments": []}
+        # Convert faster-whisper output to openai-whisper compatible format
+        # We will split segments on punctuation to ensure clean speaker boundaries
+        segments = []
+        full_text_parts = []
 
-        try:
-            result = self._model.transcribe(data, **options)
-        except (TypeError, RuntimeError) as e:
-            # Known issue: word_timestamps hooks can crash on certain
-            # PyTorch/Whisper version combos.  Retry without them.
-            logger.warning(f"word_timestamps failed ({e}), retrying without them...")
-            options["word_timestamps"] = False
-            result = self._model.transcribe(data, **options)
+        import re
+        sentence_end = re.compile(r'[.!?]\s*$')
 
-        duration = result["segments"][-1]["end"] if result["segments"] else 0
-        logger.info(f"Transcription complete: {len(result['segments'])} segments, ~{duration:.0f}s")
+        for segment in segments_gen:
+            # If the segment is long and contains multiple sentences, split it
+            # This helps the classifier assign different speakers to different sentences
+            words = segment.words if segment.words else []
+            
+            if not words:
+                # Fallback if no word timestamps
+                seg_dict = {
+                    "start": segment.start,
+                    "end": segment.end,
+                    "text": segment.text,
+                }
+                segments.append(seg_dict)
+                full_text_parts.append(segment.text)
+                continue
+
+            current_sentence = []
+            current_start = words[0].start
+            
+            for i, w in enumerate(words):
+                current_sentence.append(w.word)
+                
+                # Split if word ends with punctuation OR gap between words is > 0.8s (likely speaker change)
+                is_last_word = (i == len(words) - 1)
+                has_punctuation = sentence_end.search(w.word)
+                long_pause = False
+                
+                if not is_last_word:
+                    next_word = words[i+1]
+                    if next_word.start - w.end > 0.6:
+                        long_pause = True
+
+                if has_punctuation or long_pause or is_last_word:
+                    text = "".join(current_sentence).strip()
+                    if text:
+                        segments.append({
+                            "start": current_start,
+                            "end": w.end,
+                            "text": text
+                        })
+                        full_text_parts.append(" " + text)
+                    
+                    current_sentence = []
+                    if not is_last_word:
+                        current_start = words[i+1].start
+
+        result = {
+            "text": "".join(full_text_parts).strip(),
+            "segments": segments,
+            "language": info.language,
+        }
+
+        duration = segments[-1]["end"] if segments else 0
+        logger.info(f"Transcription complete: {len(segments)} segments, ~{duration:.0f}s")
         return result
 
 
@@ -167,15 +227,25 @@ class PyannoteDiarizer:
                 )
 
             logger.info("Loading pyannote speaker diarization pipeline...")
+            
+            # Pyannote 3.1 requires BOTH token and use_auth_token depending on the internal module
+            # We pass both to ensure all sub-models (segmentation, embedding) authenticate correctly
+            import os
+            os.environ["HF_TOKEN"] = self.hf_token
+            
             self._pipeline = Pipeline.from_pretrained(
                 "pyannote/speaker-diarization-3.1",
-                token=self.hf_token,
+                use_auth_token=self.hf_token,
             )
 
             # Use GPU if available
             if torch.cuda.is_available():
                 self._pipeline.to(torch.device("cuda"))
                 logger.info("Pyannote using CUDA")
+            else:
+                # Optimize for CPU: use more threads since user has 24 cores
+                torch.set_num_threads(16)
+                logger.info("Pyannote using CPU (optimized threads: 16)")
             logger.info("Pyannote loaded.")
 
     def diarize(self, audio_path: str) -> List[Dict]:
@@ -187,7 +257,13 @@ class PyannoteDiarizer:
             self.load()
 
         logger.info("Running speaker diarization...")
-        diarization = self._pipeline(audio_path)
+        
+        # Optimize Pyannote for speed:
+        # 1. Limit max speakers to 2 (Clinician and Patient)
+        diarization = self._pipeline(
+            audio_path, 
+            num_speakers=2
+        )
 
         segments = []
         for turn, _, speaker in diarization.itertracks(yield_label=True):
@@ -329,19 +405,11 @@ class TranscriptionService:
     ):
         self.audio_extractor   = AudioExtractor()
         self.whisper           = WhisperTranscriber(model_size=whisper_model, language=language)
-        self.diarizer          = PyannoteDiarizer(hf_token=hf_token)
-        self.aligner           = TranscriptAligner()
-        self._diarization_available = True
+        self._diarization_available = False
 
     def load_models(self):
-        """Pre-load Whisper at startup. Pyannote loads lazily on first use."""
+        """Pre-load Whisper at startup."""
         self.whisper.load()
-        # Try to load pyannote (may fail if no HF_TOKEN)
-        try:
-            self.diarizer.load()
-        except Exception as e:
-            logger.warning(f"Pyannote not available: {e}. Will use text-only classification.")
-            self._diarization_available = False
 
     def process(self, audio_path: str) -> Tuple[ClassifiedTranscript, float]:
         """
@@ -352,19 +420,19 @@ class TranscriptionService:
             # Step 0: Normalize audio to WAV 16kHz mono via ffmpeg (imageio)
             wav_path = self.audio_extractor.extract(audio_path)
 
-            # Step 1: Transcribe the normalized WAV
-            whisper_result = self.whisper.transcribe(wav_path)
-            raw_transcript = whisper_result.get("text", "").strip()
-            audio_duration = (
-                whisper_result["segments"][-1]["end"]
-                if whisper_result["segments"] else 0.0
-            )
+            import soundfile as sf
+            audio_info = sf.info(wav_path)
+            audio_duration = audio_info.frames / audio_info.samplerate
 
-            # Step 2: Diarize + align (if pyannote is available)
-            if self._diarization_available:
-                turns = self._pipeline_with_diarization(whisper_result, wav_path)
-            else:
-                turns = self._pipeline_text_only(whisper_result)
+            # Step 1: Transcribe the entire audio with Whisper
+            # We rely on Whisper's built-in VAD and punctuation to create natural segments
+            whisper_result = self.whisper.transcribe(wav_path)
+            
+            # Step 2: Use text-only classification (Heuristic + LLM)
+            # This is much faster, more private, and cheaper than Pyannote
+            turns = self._pipeline_text_only(whisper_result)
+
+            raw_transcript = " ".join(t.text for t in turns)
 
             # Build ClassifiedTranscript
             result = ClassifiedTranscript(
@@ -384,27 +452,6 @@ class TranscriptionService:
             # Clean up normalized WAV if it differs from the input
             if 'wav_path' in locals() and wav_path != audio_path and os.path.exists(wav_path):
                 os.unlink(wav_path)
-
-    def _pipeline_with_diarization(
-        self, whisper_result: dict, audio_path: str
-    ) -> List[DialogueTurn]:
-        """Uses pyannote + Whisper for accurate speaker-labeled turns."""
-        diarization_segs = self.diarizer.diarize(audio_path)
-        aligned = self.aligner.align(whisper_result, diarization_segs)
-        labeled = self.aligner.assign_roles(aligned)
-
-        return [
-            DialogueTurn(
-                index=i,
-                speaker=seg["role"],
-                text=seg["text"],
-                start_time=seg.get("start"),
-                end_time=seg.get("end"),
-                confidence=seg.get("confidence", 0.0),
-                method="diarization+whisper",
-            )
-            for i, seg in enumerate(labeled)
-        ]
 
     def _pipeline_text_only(self, whisper_result: dict) -> List[DialogueTurn]:
         """

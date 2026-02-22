@@ -473,47 +473,17 @@ class HybridClassifier:
         """
         Merge consecutive turns with the same speaker into a single turn.
         Produces a natural conversation flow (D → P → D → P ...).
-        
-        Boundary rules that PREVENT merging even with the same speaker:
-        - Question boundary: if prev text ends with '?', next turn is likely
-          the other speaker's answer (even if both classified same speaker)
-        - Max merge limit: prevent mega-turns from runaway merges
         """
         if not turns:
             return turns
 
-        MAX_MERGE_SEGMENTS = 5  # max segments to merge into one turn
-
         merged: List[DialogueTurn] = [turns[0].model_copy()]
-        merge_count = 1  # how many segments in current merged turn
 
         for t in turns[1:]:
             last = merged[-1]
             
             # Same speaker — check if we should merge or break
             if t.speaker == last.speaker:
-                # Question boundary: if previous text ends with ?, this is likely
-                # a different speaker's response (classification error)
-                prev_text = last.text.rstrip()
-                if prev_text.endswith('?'):
-                    # Don't merge — force a speaker break
-                    # Flip the new turn to opposite speaker
-                    opposite = (SpeakerRole.PATIENT if t.speaker == SpeakerRole.CLINICIAN
-                               else SpeakerRole.CLINICIAN)
-                    merged.append(t.model_copy(update={
-                        "speaker": opposite,
-                        "confidence": min(t.confidence, 0.50),
-                        "method": t.method + "+qbreak",
-                    }))
-                    merge_count = 1
-                    continue
-                
-                # Max merge limit — prevent mega-turns
-                if merge_count >= MAX_MERGE_SEGMENTS:
-                    merged.append(t.model_copy())
-                    merge_count = 1
-                    continue
-                
                 # Normal merge
                 merged[-1] = last.model_copy(update={
                     "text": last.text.rstrip() + " " + t.text.lstrip(),
@@ -521,10 +491,8 @@ class HybridClassifier:
                     "confidence": min(last.confidence, t.confidence),
                     "method": last.method if last.method == t.method else f"{last.method}+merged",
                 })
-                merge_count += 1
             else:
                 merged.append(t.model_copy())
-                merge_count = 1
 
         # Re-index sequentially
         for i, t in enumerate(merged):

@@ -126,11 +126,6 @@ Return ONLY the patient-friendly summary text. Do not include JSON formatting.
 # ─────────────────────────────────────────────────────────────────────────────
 
 class MedGemmaLocal:
-    """
-    Loads MedGemma-4B-IT locally from HuggingFace.
-    Best for: dev environments with a GPU, full data privacy.
-    GPU: ~8GB VRAM (bfloat16)
-    """
 
     MODEL_ID = "google/medgemma-4b-it"
 
@@ -190,16 +185,7 @@ class MedGemmaLocal:
 # ─────────────────────────────────────────────────────────────────────────────
 
 class MedGemmaModal:
-    """
-    Calls MedGemma-4B-IT deployed on Modal via vLLM.
-    The Modal endpoint exposes an OpenAI-compatible /v1/chat/completions API.
-    Best for: production, scalability, no local GPU needed.
 
-    Setup:
-      1. Deploy with: modal deploy modal_medgemma.py
-      2. Set env var:
-           MODAL_MEDGEMMA_URL = https://<workspace>--medgemma-emr-medgemmaserver-serve.modal.run
-    """
 
     def __init__(self):
         self.base_url = os.getenv("MODAL_MEDGEMMA_URL", "").rstrip("/")
@@ -221,9 +207,12 @@ class MedGemmaModal:
         self._client = httpx.Client(base_url=self.base_url, timeout=300.0)
         # Quick connectivity check
         try:
+            # vLLM endpoints might not expose /v1/models by default, so we just log it
             resp = self._client.get("/v1/models")
-            resp.raise_for_status()
-            logger.info(f"Modal MedGemma endpoint ready: {self.base_url}")
+            if resp.status_code == 200:
+                logger.info(f"Modal MedGemma endpoint ready: {self.base_url}")
+            else:
+                logger.info(f"Modal MedGemma endpoint configured: {self.base_url} (status {resp.status_code})")
         except Exception as e:
             logger.warning(f"Modal endpoint check failed (may still work): {e}")
         self.loaded = True

@@ -1,6 +1,7 @@
+import { useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Mic, MicOff, FileText, TrendingUp, Stethoscope, Users
+  Mic, MicOff, FileText, Stethoscope, Users, Loader2, CheckCircle2
 } from "lucide-react";
 import { useIsMobile } from "../../../../hooks/useMediaQuery";
 
@@ -8,11 +9,43 @@ interface LiveTranscriptionProps {
   isRecording: boolean;
   transcript: string;
   onToggleRecording: () => void;
+  /** Call to finalise consultation (extract, summarise, etc.) */
+  onFinalise?: () => void;
+  /** Whether a batch is currently being sent */
+  isSending?: boolean;
+  /** Current batch index */
+  batchIndex?: number;
+  /** Whether finalise is in progress */
+  isFinalising?: boolean;
+  /** Whether consultation has been finalised */
+  isComplete?: boolean;
+  /** Whether there's a consultation in progress */
+  hasConsultation?: boolean;
 }
 
-const LiveTranscription = ({ isRecording, transcript, onToggleRecording }: LiveTranscriptionProps) => {
+const LiveTranscription = ({
+  isRecording,
+  transcript,
+  onToggleRecording,
+  onFinalise,
+  isSending = false,
+  batchIndex = 0,
+  isFinalising = false,
+  isComplete = false,
+  hasConsultation = false,
+}: LiveTranscriptionProps) => {
   const isMobile = useIsMobile();
-  
+  const bodyRef = useRef<HTMLDivElement>(null);
+
+  // Auto scroll to bottom when transcript updates
+  useEffect(() => {
+    if (bodyRef.current) {
+      bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
+    }
+  }, [transcript]);
+
+  const canFinalise = !isRecording && transcript.length > 10 && !isFinalising && !isComplete && hasConsultation;
+
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', maxHeight: isMobile ? '400px' : '650px',
@@ -21,50 +54,69 @@ const LiveTranscription = ({ isRecording, transcript, onToggleRecording }: LiveT
       border: '1px solid rgba(0,0,0,0.04)',
       boxShadow: '0 1px 4px rgba(0,0,0,0.03)'
     }}>
-      {/* Transcription Header */}
+      {/* Header */}
       <div style={{
         padding: isMobile ? '12px 14px' : '16px 20px',
         background: isRecording
           ? 'linear-gradient(135deg, #DC2626 0%, #EF4444 100%)'
-          : 'linear-gradient(135deg, #0B3C3D 0%, #1F9FA3 100%)',
+          : isFinalising
+            ? 'linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)'
+            : isComplete
+              ? 'linear-gradient(135deg, #16A34A 0%, #22C55E 100%)'
+              : 'linear-gradient(135deg, #0B3C3D 0%, #1F9FA3 100%)',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         position: 'relative', overflow: 'hidden'
       }}>
         <div style={{ position: 'absolute', top: '-15px', right: '-15px', width: '60px', height: '60px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.05)' }} />
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
-            <Mic size={17} color="white" />
+            {isFinalising ? <Loader2 size={17} color="white" className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} /> : <Mic size={17} color="white" />}
             <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'white', margin: 0 }}>
-              Live Consultation
+              {isFinalising ? 'Analyzing Consultation...' : isComplete ? 'Consultation Complete' : 'Live Consultation'}
             </h3>
           </div>
-          {isRecording && (
-            <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', margin: 0, fontWeight: 500 }}>
-              Recording in progress... AI is listening
-            </p>
-          )}
+          <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', margin: 0, fontWeight: 500 }}>
+            {isRecording
+              ? `Recording... Batch ${batchIndex}${isSending ? ' · Transcribing...' : ''}`
+              : isFinalising
+                ? 'Generating summaries, extracting entities...'
+                : isComplete
+                  ? 'Summary & report are ready in the AI panel →'
+                  : hasConsultation
+                    ? 'Recording paused'
+                    : 'Ready to record'}
+          </p>
         </div>
-        <button
-          onClick={onToggleRecording}
-          style={{ 
-            display: 'flex', alignItems: 'center', gap: '6px',
-            padding: '8px 16px', borderRadius: '10px',
-            backgroundColor: isRecording ? 'white' : 'rgba(255,255,255,0.15)',
-            color: isRecording ? '#DC2626' : 'white',
-            border: '1px solid rgba(255,255,255,0.2)',
-            fontSize: '12px', fontWeight: 600,
-            cursor: 'pointer', transition: 'all 0.2s'
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isRecording ? '#FEE2E2' : 'rgba(255,255,255,0.25)'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isRecording ? 'white' : 'rgba(255,255,255,0.15)'; }}
-        >
-          {isRecording ? <MicOff size={14} /> : <Mic size={14} />}
-          {isRecording ? 'Stop' : 'Start'}
-        </button>
+        {!isFinalising && !isComplete && (
+          <button
+            onClick={onToggleRecording}
+            disabled={isFinalising}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '8px 16px', borderRadius: '10px',
+              backgroundColor: isRecording ? 'white' : 'rgba(255,255,255,0.15)',
+              color: isRecording ? '#DC2626' : 'white',
+              border: '1px solid rgba(255,255,255,0.2)',
+              fontSize: '12px', fontWeight: 600,
+              cursor: 'pointer', transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = isRecording ? '#FEE2E2' : 'rgba(255,255,255,0.25)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = isRecording ? 'white' : 'rgba(255,255,255,0.15)'; }}
+          >
+            {isRecording ? <MicOff size={14} /> : <Mic size={14} />}
+            {isRecording ? 'Stop' : 'Start'}
+          </button>
+        )}
+        {isComplete && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'white', fontSize: '12px', fontWeight: 600 }}>
+            <CheckCircle2 size={16} /> Done
+          </div>
+        )}
       </div>
-      
-      {/* Transcription Body */}
-      <div 
+
+      {/* Body */}
+      <div
+        ref={bodyRef}
         style={{
           flex: 1, padding: '16px',
           backgroundColor: '#FAFCFC',
@@ -74,12 +126,12 @@ const LiveTranscription = ({ isRecording, transcript, onToggleRecording }: LiveT
       >
         {isRecording || transcript ? (
           <div>
-            {transcript.split('\n\n').map((paragraph, idx) => {
+            {transcript.split('\n\n').filter(Boolean).map((paragraph, idx) => {
               const isDoctor = paragraph.startsWith('Doctor:');
               const isPatient = paragraph.startsWith('Patient:');
-              
+
               return (
-                <motion.div 
+                <motion.div
                   key={idx}
                   initial={{ opacity: 0, x: isDoctor ? -8 : 8 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -113,6 +165,11 @@ const LiveTranscription = ({ isRecording, transcript, onToggleRecording }: LiveT
                 style={{ color: '#1F9FA3', fontSize: '18px', display: 'inline-block' }}
               > ▊</motion.span>
             )}
+            {isSending && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 0', color: '#94A3B8', fontSize: '11px' }}>
+                <Loader2 size={12} style={{ animation: 'spin 1s linear infinite' }} /> Transcribing batch...
+              </div>
+            )}
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '32px 20px', textAlign: 'center' }}>
@@ -125,7 +182,7 @@ const LiveTranscription = ({ isRecording, transcript, onToggleRecording }: LiveT
               <Mic size={24} color="#CBD5E1" />
             </div>
             <p style={{ fontSize: '14px', fontWeight: 600, color: '#334155', margin: '0 0 6px' }}>
-              Click "Start" to begin transcription
+              {hasConsultation ? 'Click "Start" to begin recording' : 'Create a consultation to begin'}
             </p>
             <p style={{ fontSize: '11.5px', color: '#94A3B8', margin: '0 0 12px', lineHeight: 1.5 }}>
               AI will capture and analyze the conversation in real-time
@@ -148,44 +205,52 @@ const LiveTranscription = ({ isRecording, transcript, onToggleRecording }: LiveT
         )}
       </div>
 
-      {/* Transcription Footer */}
+      {/* Footer */}
       <div style={{
         padding: '12px 16px',
         borderTop: '1px solid rgba(0,0,0,0.04)',
         backgroundColor: 'white',
         display: 'flex', gap: '8px'
       }}>
-        <button 
-          disabled={!transcript}
+        <button
+          disabled={!canFinalise}
+          onClick={onFinalise}
           style={{
             flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
             padding: '10px 14px', borderRadius: '10px', border: 'none',
-            background: transcript ? 'linear-gradient(135deg, #1F9FA3, #17858A)' : 'rgba(0,0,0,0.04)',
-            color: transcript ? 'white' : '#CBD5E1',
+            background: canFinalise
+              ? 'linear-gradient(135deg, #7C3AED, #6D28D9)'
+              : isFinalising
+                ? 'linear-gradient(135deg, #7C3AED, #6D28D9)'
+                : isComplete
+                  ? 'linear-gradient(135deg, #16A34A, #15803D)'
+                  : 'rgba(0,0,0,0.04)',
+            color: canFinalise || isFinalising || isComplete ? 'white' : '#CBD5E1',
             fontSize: '12px', fontWeight: 600,
-            cursor: transcript ? 'pointer' : 'not-allowed',
-            boxShadow: transcript ? '0 2px 8px rgba(31,159,163,0.25)' : 'none',
-            transition: 'all 0.2s'
+            cursor: canFinalise ? 'pointer' : 'not-allowed',
+            boxShadow: canFinalise ? '0 2px 8px rgba(124,58,237,0.25)' : 'none',
+            transition: 'all 0.2s',
+            opacity: isFinalising ? 0.8 : 1,
           }}
         >
-          <FileText size={14} /> Generate SOAP Note
-        </button>
-        <button 
-          disabled={!transcript}
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
-            padding: '10px 14px', borderRadius: '10px', border: 'none',
-            background: transcript ? 'linear-gradient(135deg, #16A34A, #15803D)' : 'rgba(0,0,0,0.04)',
-            color: transcript ? 'white' : '#CBD5E1',
-            fontSize: '12px', fontWeight: 600,
-            cursor: transcript ? 'pointer' : 'not-allowed',
-            boxShadow: transcript ? '0 2px 8px rgba(22,163,74,0.25)' : 'none',
-            transition: 'all 0.2s'
-          }}
-        >
-          <TrendingUp size={14} /> ICD Codes
+          {isFinalising ? (
+            <>
+              <Loader2 size={14} style={{ animation: 'spin 1s linear infinite' }} /> Generating Report...
+            </>
+          ) : isComplete ? (
+            <>
+              <CheckCircle2 size={14} /> Report Ready
+            </>
+          ) : (
+            <>
+              <FileText size={14} /> Generate Summary & Report
+            </>
+          )}
         </button>
       </div>
+
+      {/* Spin animation keyframes */}
+      <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 };

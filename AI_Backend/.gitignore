@@ -1,4 +1,7 @@
 Fastapi_backend/venv/
 Fastapi_backend/__pycache__/
 .env
-Modal/_pycache__/
+Modal/__pycache__/
+Doc_Analysis_Backend/venv/
+Doc_Analysis_Backend/__pycache__/
+Doc_Analysis_Backend/.env
