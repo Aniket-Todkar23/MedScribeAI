@@ -1,0 +1,1796 @@
+{
+    "info": {
+        "name": "Smart EMR Backend API",
+        "_postman_id": "smart-emr-v2-complete",
+        "description": "Complete API test collection for Smart EMR & Diagnostic Assistant.\n\nRun requests in order — tokens are auto-saved from signup/login.\n\nBase URL: http://localhost:3001",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "base",
+            "value": "http://localhost:3001/api/v1",
+            "type": "string"
+        },
+        {
+            "key": "host",
+            "value": "http://localhost:3001",
+            "type": "string"
+        },
+        {
+            "key": "doctor_token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "patient_token",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "doctor_refresh",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "patient_refresh",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "doctor_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "patient_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "appointment_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "consultation_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "document_id",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "0. Health Check",
+            "item": [
+                {
+                    "name": "Health Check",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Server healthy', () => { pm.response.to.have.status(200); });"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{host}}/health",
+                            "host": [
+                                "{{host}}"
+                            ],
+                            "path": [
+                                "health"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "1. Authentication",
+            "item": [
+                {
+                    "name": "1.1 Signup Doctor",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "pm.test('Doctor signup → 201', () => pm.response.to.have.status(201));",
+                                    "pm.test('Returns access_token', () => pm.expect(json.access_token).to.be.a('string'));",
+                                    "pm.test('User type is doctor', () => pm.expect(json.user.user_type).to.equal('doctor'));",
+                                    "if (json.access_token) {",
+                                    "  pm.collectionVariables.set('doctor_token', json.access_token);",
+                                    "  pm.collectionVariables.set('doctor_refresh', json.refresh_token);",
+                                    "  pm.collectionVariables.set('doctor_id', json.user.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"full_name\": \"Dr. Aniket Todkar\",\n  \"email\": \"doctor@smartemr.dev\",\n  \"password\": \"test1234\",\n  \"specialization\": \"General Medicine\",\n  \"license_number\": \"MED-2026-001\",\n  \"hospital_name\": \"Smart EMR Hospital\",\n  \"phone\": \"+919876543210\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/auth/signup/doctor",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "signup",
+                                "doctor"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "1.2 Signup Patient",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "pm.test('Patient signup → 201', () => pm.response.to.have.status(201));",
+                                    "pm.test('User type is patient', () => pm.expect(json.user.user_type).to.equal('patient'));",
+                                    "if (json.access_token) {",
+                                    "  pm.collectionVariables.set('patient_token', json.access_token);",
+                                    "  pm.collectionVariables.set('patient_refresh', json.refresh_token);",
+                                    "  pm.collectionVariables.set('patient_id', json.user.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"full_name\": \"Patient Demo\",\n  \"email\": \"patient@smartemr.dev\",\n  \"password\": \"test1234\",\n  \"phone\": \"+919876543211\",\n  \"date_of_birth\": \"1995-06-15\",\n  \"gender\": \"male\",\n  \"blood_group\": \"O+\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/auth/signup/patient",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "signup",
+                                "patient"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "1.3 Login Doctor",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "pm.test('Doctor login → 200', () => pm.response.to.have.status(200));",
+                                    "if (json.access_token) {",
+                                    "  pm.collectionVariables.set('doctor_token', json.access_token);",
+                                    "  pm.collectionVariables.set('doctor_refresh', json.refresh_token);",
+                                    "  pm.collectionVariables.set('doctor_id', json.user.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"doctor@smartemr.dev\",\n  \"password\": \"test1234\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/auth/login",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "1.4 Login Patient",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "pm.test('Patient login → 200', () => pm.response.to.have.status(200));",
+                                    "if (json.access_token) {",
+                                    "  pm.collectionVariables.set('patient_token', json.access_token);",
+                                    "  pm.collectionVariables.set('patient_refresh', json.refresh_token);",
+                                    "  pm.collectionVariables.set('patient_id', json.user.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"patient@smartemr.dev\",\n  \"password\": \"test1234\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/auth/login",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "login"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "1.5 Get My Profile (Doctor)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Doctor profile → 200', () => pm.response.to.have.status(200));",
+                                    "pm.test('Has id', () => pm.expect(pm.response.json()).to.have.property('id'));",
+                                    "pm.test('Is doctor', () => pm.expect(pm.response.json().user_type).to.equal('doctor'));"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/auth/me",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "1.6 Get My Profile (Patient)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Patient profile → 200', () => pm.response.to.have.status(200));"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{patient_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/auth/me",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "1.7 Refresh Token (Doctor)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "pm.test('Refresh → 200', () => pm.response.to.have.status(200));",
+                                    "if (json.access_token) pm.collectionVariables.set('doctor_token', json.access_token);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"refresh_token\": \"{{doctor_refresh}}\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/auth/refresh",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "auth",
+                                "refresh"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "2. Patients",
+            "item": [
+                {
+                    "name": "2.1 Get My Patient Profile",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('→ 200', () => pm.response.to.have.status(200));"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{patient_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/patients/me",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "patients",
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "2.2 Update My Patient Profile",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('→ 200', () => pm.response.to.have.status(200));"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{patient_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"phone\": \"+919876543211\",\n  \"blood_group\": \"O+\",\n  \"address\": \"123 Test Street, Mumbai\",\n  \"emergency_contact\": \"+919876543200\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/patients/me",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "patients",
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "2.3 Submit Onboarding",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('→ 201', () => pm.response.to.have.status(201));"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{patient_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"has_diabetes\": false,\n  \"has_heart_disease\": false,\n  \"has_lung_disease\": false,\n  \"no_medical_conditions\": true,\n  \"taking_medications\": false,\n  \"has_allergies\": true,\n  \"allergies_list\": \"Peanuts, Shellfish\",\n  \"smoking_status\": \"never\",\n  \"alcohol_use\": \"occasional\",\n  \"had_major_surgeries\": false,\n  \"consent_data_storage\": true,\n  \"consent_ai_assist\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/patients/me/onboarding",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "patients",
+                                "me",
+                                "onboarding"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "2.4 Get My Onboarding",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('→ 200', () => pm.response.to.have.status(200));"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{patient_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/patients/me/onboarding",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "patients",
+                                "me",
+                                "onboarding"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "2.5 Get Patient By ID (Doctor)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('→ 200', () => pm.response.to.have.status(200));"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/patients/{{patient_id}}",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "patients",
+                                "{{patient_id}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "2.6 Get Patient Onboarding (Doctor)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/patients/{{patient_id}}/onboarding",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "patients",
+                                "{{patient_id}}",
+                                "onboarding"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "3. Doctors",
+            "item": [
+                {
+                    "name": "3.1 List All Doctors",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('→ 200 array', () => { pm.response.to.have.status(200); pm.expect(pm.response.json()).to.be.an('array'); });"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{patient_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/doctors",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "doctors"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "3.2 Get My Doctor Profile",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/doctors/me",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "doctors",
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "3.3 Update My Doctor Profile",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"specialization\": \"Internal Medicine\",\n  \"hospital_name\": \"SmartEMR Central Hospital\",\n  \"phone\": \"+919876543210\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/doctors/me",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "doctors",
+                                "me"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "3.4 Get Doctor By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{patient_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/doctors/{{doctor_id}}",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "doctors",
+                                "{{doctor_id}}"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "4. Appointments",
+            "item": [
+                {
+                    "name": "4.1 Book Appointment (Patient)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "pm.test('→ 201', () => pm.response.to.have.status(201));",
+                                    "if (json.appointment_id) pm.collectionVariables.set('appointment_id', json.appointment_id);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{patient_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"doctor_id\": \"{{doctor_id}}\",\n  \"appointment_date\": \"2026-03-01T10:00:00+05:30\",\n  \"appointment_type\": \"telehealth\",\n  \"reason\": \"Recurring headaches and mild fever for 3 days\",\n  \"duration_minutes\": 30\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/appointments",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "appointments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "4.2 List My Appointments (Patient)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{patient_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/appointments",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "appointments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "4.3 List My Appointments (Doctor)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/appointments",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "appointments"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "4.4 Upcoming Appointments (Doctor)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/appointments/upcoming",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "appointments",
+                                "upcoming"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "4.5 Get Appointment By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/appointments/{{appointment_id}}",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "appointments",
+                                "{{appointment_id}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "4.6 Approve Appointment (Doctor)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('Approved', () => { pm.response.to.have.status(200); pm.expect(pm.response.json().status).to.equal('confirmed'); });"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/appointments/{{appointment_id}}/approve",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "appointments",
+                                "{{appointment_id}}",
+                                "approve"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "4.7 Reject Appointment (Doctor)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"reason\": \"Doctor unavailable on requested date\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/appointments/{{appointment_id}}/reject",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "appointments",
+                                "{{appointment_id}}",
+                                "reject"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "4.8 Update Appointment",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"notes\": \"Patient may need follow-up labs\",\n  \"duration_minutes\": 45\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/appointments/{{appointment_id}}",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "appointments",
+                                "{{appointment_id}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "4.9 Cancel Appointment (DELETE)",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{patient_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/appointments/{{appointment_id}}",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "appointments",
+                                "{{appointment_id}}"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "5. Consultations",
+            "item": [
+                {
+                    "name": "5.1 Create Consultation (Doctor)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "pm.test('→ 201', () => pm.response.to.have.status(201));",
+                                    "if (json.consultation_id) pm.collectionVariables.set('consultation_id', json.consultation_id);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"patient_id\": \"{{patient_id}}\",\n  \"appointment_id\": \"{{appointment_id}}\",\n  \"transcription\": \"DOCTOR: What brings you in today?\\nPATIENT: I've been having headaches for the past three days, along with a mild fever.\\nDOCTOR: Any other symptoms? Nausea, vomiting?\\nPATIENT: Some nausea, but no vomiting.\\nDOCTOR: Let me check your vitals.\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/consultations",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "consultations"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "5.2 Get Consultation By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/consultations/{{consultation_id}}",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "consultations",
+                                "{{consultation_id}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "5.3 Update Consultation (SOAP + ICD + Rx)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('→ 200', () => pm.response.to.have.status(200));"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"soap_note\": {\n    \"subjective\": \"Patient reports headaches for 3 days with mild fever and nausea. No vomiting.\",\n    \"objective\": \"Temp 99.8°F, BP 120/80, HR 82, RR 18. Throat mildly erythematous.\",\n    \"assessment\": \"Viral upper respiratory infection with tension-type headache\",\n    \"plan\": \"Rest, hydration, Paracetamol 500mg PRN. Follow-up in 5 days if symptoms persist.\"\n  },\n  \"icd_codes\": [\n    {\"code\": \"J06.9\", \"description\": \"Acute upper respiratory infection, unspecified\"},\n    {\"code\": \"R51\", \"description\": \"Headache\"},\n    {\"code\": \"R50.9\", \"description\": \"Fever, unspecified\"}\n  ],\n  \"prescription\": [\n    {\"drug\": \"Paracetamol\", \"dose\": \"500mg\", \"frequency\": \"Every 6 hours as needed\", \"duration\": \"5 days\"},\n    {\"drug\": \"Ondansetron\", \"dose\": \"4mg\", \"frequency\": \"Twice daily\", \"duration\": \"3 days\"}\n  ],\n  \"patient_summary\": \"You have a viral infection causing your headaches and fever. Take Paracetamol for pain and Ondansetron for nausea. Rest well, drink plenty of fluids. Come back in 5 days if you don't feel better.\",\n  \"status\": \"confirmed\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/consultations/{{consultation_id}}",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "consultations",
+                                "{{consultation_id}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "5.4 Get Patient Consultation History",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/consultations/patient/{{patient_id}}",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "consultations",
+                                "patient",
+                                "{{patient_id}}"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "6. Documents",
+            "item": [
+                {
+                    "name": "6.1 Upload Document",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "const json = pm.response.json();",
+                                    "pm.test('→ 201', () => pm.response.to.have.status(201));",
+                                    "if (json.document_id) pm.collectionVariables.set('document_id', json.document_id);"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": "",
+                                    "description": "Select a PDF/image file"
+                                },
+                                {
+                                    "key": "patient_id",
+                                    "value": "{{patient_id}}",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "document_type",
+                                    "value": "lab_report",
+                                    "type": "text"
+                                },
+                                {
+                                    "key": "notes",
+                                    "value": "Blood work results Feb 2026",
+                                    "type": "text"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base}}/documents/upload",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "documents",
+                                "upload"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "6.2 Get Document By ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/documents/{{document_id}}",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "documents",
+                                "{{document_id}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "6.3 List Patient Documents",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/documents/patient/{{patient_id}}",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "documents",
+                                "patient",
+                                "{{patient_id}}"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "7. Meetings (LiveKit)",
+            "item": [
+                {
+                    "name": "7.1 Create Meeting Room",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "pm.test('→ 200/201', () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/meetings/{{appointment_id}}/create-room",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "meetings",
+                                "{{appointment_id}}",
+                                "create-room"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "7.2 Get Join Token (Doctor)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/meetings/{{appointment_id}}/join-token",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "meetings",
+                                "{{appointment_id}}",
+                                "join-token"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "7.3 Get Join Token (Patient)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{patient_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/meetings/{{appointment_id}}/join-token",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "meetings",
+                                "{{appointment_id}}",
+                                "join-token"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "7.4 Get Meeting Status",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/meetings/{{appointment_id}}/status",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "meetings",
+                                "{{appointment_id}}",
+                                "status"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "7.5 End Meeting",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/meetings/{{appointment_id}}/end",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "meetings",
+                                "{{appointment_id}}",
+                                "end"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "8. AI Agent Chat",
+            "item": [
+                {
+                    "name": "8.1 Patient Health Chat",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{patient_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"message\": \"What are my upcoming appointments?\",\n  \"session_id\": \"patient-session-001\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/agent/patient/chat",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "agent",
+                                "patient",
+                                "chat"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "8.2 Clinician Chat",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"message\": \"Show me patient history for patient {{patient_id}}\",\n  \"session_id\": \"doctor-session-001\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/agent/clinician/chat",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "agent",
+                                "clinician",
+                                "chat"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "8.3 Meeting Chat (During Consultation)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"message\": \"What ICD codes match recurring headaches with fever?\",\n  \"appointment_id\": \"{{appointment_id}}\",\n  \"session_id\": \"meeting-session-001\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/agent/clinician/meeting-chat",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "agent",
+                                "clinician",
+                                "meeting-chat"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "8.4 Get Chat History",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/agent/history/doctor-session-001",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "agent",
+                                "history",
+                                "doctor-session-001"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "9. AI Proxy (to AI Backend)",
+            "item": [
+                {
+                    "name": "9.1 AI Backend Health",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/ai/health",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "ai",
+                                "health"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "9.2 Transcribe Audio",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": "",
+                                    "description": "Select audio file (WAV/MP3)"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base}}/ai/transcribe",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "ai",
+                                "transcribe"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "9.3 Extract Medical Entities",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"transcript\": \"DOCTOR: Patient presents with recurring headaches for 3 days. Mild fever 99.8F. BP normal. Prescribing Paracetamol 500mg.\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/ai/extract",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "ai",
+                                "extract"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "9.4 Generate EMR Record",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"entities\": {\n    \"symptoms\": [\"headache\", \"fever\", \"nausea\"],\n    \"vitals\": {\"temperature\": \"99.8F\", \"bp\": \"120/80\"},\n    \"diagnosis\": \"Viral URI\",\n    \"medications\": [\"Paracetamol 500mg\"]\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/ai/generate-emr",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "ai",
+                                "generate-emr"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "9.5 Generate Patient Summary",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"emr_data\": {\n    \"diagnosis\": \"Viral upper respiratory infection\",\n    \"medications\": [\"Paracetamol 500mg every 6h\", \"Ondansetron 4mg twice daily\"],\n    \"plan\": \"Rest, fluids, follow-up in 5 days\"\n  }\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/ai/patient-summary",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "ai",
+                                "patient-summary"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "9.6 ICD Code Lookup",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"query\": \"headache\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/ai/icd-lookup",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "ai",
+                                "icd-lookup"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "9.7 Suggest Diagnoses",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"symptoms\": \"recurring headaches, mild fever 99.8F, nausea, no vomiting\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base}}/ai/suggest-diagnoses",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "ai",
+                                "suggest-diagnoses"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "9.8 Analyze Document (Vision)",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "body": {
+                            "mode": "formdata",
+                            "formdata": [
+                                {
+                                    "key": "file",
+                                    "type": "file",
+                                    "src": "",
+                                    "description": "Select lab report / prescription image"
+                                }
+                            ]
+                        },
+                        "url": {
+                            "raw": "{{base}}/ai/analyze-document",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "ai",
+                                "analyze-document"
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "10. FHIR R4 (EMR Integration)",
+            "item": [
+                {
+                    "name": "10.1 FHIR Patient Resource",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/fhir/Patient/{{patient_id}}",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "fhir",
+                                "Patient",
+                                "{{patient_id}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "10.2 FHIR Encounter",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/fhir/Encounter/{{consultation_id}}",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "fhir",
+                                "Encounter",
+                                "{{consultation_id}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "10.3 FHIR Condition (Diagnosis)",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/fhir/Condition/{{consultation_id}}",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "fhir",
+                                "Condition",
+                                "{{consultation_id}}"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "10.4 FHIR MedicationRequest",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{doctor_token}}"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{base}}/fhir/MedicationRequest/{{consultation_id}}",
+                            "host": [
+                                "{{base}}"
+                            ],
+                            "path": [
+                                "fhir",
+                                "MedicationRequest",
+                                "{{consultation_id}}"
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

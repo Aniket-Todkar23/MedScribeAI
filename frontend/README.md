@@ -1,4 +1,4 @@
-# Smart EMR — Frontend
+# Smart EMR — frontend
 
 A modern, high-performance React frontend for the Smart EMR system, built with Vite, TypeScript, Tailwind CSS v4, and Framer Motion.
 
