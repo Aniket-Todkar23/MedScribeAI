@@ -1,0 +1,84 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: smartemr-postgres
+    environment:
+      POSTGRES_DB: smartemr
+      POSTGRES_USER: smartemr
+      POSTGRES_PASSWORD: smartemr_dev_2026
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartemr -d smartemr"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+
+  livekit:
+    image: livekit/livekit-server:latest
+    container_name: smartemr-livekit
+    ports:
+      - "7880:7880"
+      - "7881:7881"
+      - "7882:7882/udp"
+    command: --dev
+    environment:
+      LIVEKIT_KEYS: "devkey: secret"
+
+  ai-core:
+    build:
+      context: .
+      dockerfile: AI_Backend/Dockerfile
+    container_name: smartemr-ai-core
+    ports:
+      - "8000:8000"
+    env_file:
+      - AI_Backend/.env
+    volumes:
+      - ./AI_Backend/unique_icd9_codes.csv:/app/data/unique_icd9_codes.csv:ro
+      - ./AI_Backend/unique_icd10_codes.csv:/app/data/unique_icd10_codes.csv:ro
+    environment:
+      ICD9_CSV_PATH: /app/data/unique_icd9_codes.csv
+      ICD10_CSV_PATH: /app/data/unique_icd10_codes.csv
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: smartemr-server
+    ports:
+      - "3001:3001"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    env_file:
+      - Backend/.env
+    environment:
+      # Override localhost URLs with Docker service names
+      DATABASE_URL: postgresql+asyncpg://smartemr:smartemr_dev_2026@postgres:5432/smartemr
+      AI_BACKEND_URL: http://ai-core:8000/api/v1
+      LIVEKIT_URL: http://livekit:7880
+      UPLOAD_DIR: /app/uploads
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+    volumes:
+      - server_uploads:/app/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai-core:
+        condition: service_started
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+volumes:
+  pgdata:
+  server_uploads:
