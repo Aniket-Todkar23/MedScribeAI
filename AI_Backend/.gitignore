@@ -1,7 +1,4 @@
-Fastapi_backend/venv/
-Fastapi_backend/__pycache__/
+venv/
+__pychache__/
+*.pyc
 .env
-Modal/__pycache__/
-Doc_Analysis_Backend/venv/
-Doc_Analysis_Backend/__pycache__/
-Doc_Analysis_Backend/.env

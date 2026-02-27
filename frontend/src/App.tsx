@@ -1,30 +1,69 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthPage } from './features/auth/AuthPage';
-import OnboardingPage from './features/onboarding/OnboardingPage';
-import DoctorDashboard from './features/dashboard/DoctorDashboard';
-import PatientDashboard from './features/dashboard/PatientDashboard';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import Layout from './components/Layout';
+import Home from './pages/Home';
+import PatientDashboard from './pages/PatientDashboard';
+import PatientProfile from './pages/PatientProfile';
+import PatientAnalytics from './pages/PatientAnalytics';
+import DoctorDashboard from './pages/DoctorDashboard';
+import DoctorAnalytics from './pages/DoctorAnalytics';
+import ConsultationEditor from './pages/ConsultationEditor';
 import MeetingRoom from './pages/MeetingRoom';
-import OAuthCallback from './pages/OAuthCallback';
-import { useAuth } from './hooks/useAuth';
+import DocumentCenter from './pages/DocumentCenter';
+import { useAuthStore } from './store/authStore';
 
-function App() {
-  const { user } = useAuth();
-  const needsOnboarding = user?.user_type === 'patient' && localStorage.getItem('needs_onboarding') === 'true';
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, staleTime: 30_000, refetchOnWindowFocus: false },
+  },
+});
+
+function AppRoutes() {
+  const { user, hydrate } = useAuthStore();
+
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
+
+  const isPatient = user?.user_type === 'patient';
+  const isDoctor = user?.user_type === 'doctor';
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={!user ? <AuthPage /> : <Navigate to={`/dashboard/${user.user_type}`} replace />} />
-        <Route path="/onboarding" element={needsOnboarding ? <OnboardingPage /> : <Navigate to="/dashboard/patient" replace />} />
-        <Route path="/dashboard/doctor" element={user?.user_type === 'doctor' ? <DoctorDashboard /> : <Navigate to="/" replace />} />
-        <Route path="/dashboard/patient" element={user?.user_type === 'patient' ? (needsOnboarding ? <Navigate to="/onboarding" replace /> : <PatientDashboard />) : <Navigate to="/" replace />} />
-        {/* Meeting room — doctors record consultations here */}
-        <Route path="/meeting/:appointmentId" element={user?.user_type === 'doctor' ? <MeetingRoom /> : <Navigate to="/" replace />} />
-        {/* Google OAuth callback — opens in popup, exchanges code, closes itself */}
-        <Route path="/oauth/callback" element={<OAuthCallback />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <Routes>
+      <Route path="/" element={<Home />} />
+      
+      {/* Protected Routes */}
+      <Route element={<Layout />}>
+        {/* Patient Routes */}
+        <Route path="/patient" element={isPatient ? <PatientDashboard /> : <Navigate to="/" />} />
+        <Route path="/patient/documents" element={isPatient ? <DocumentCenter /> : <Navigate to="/" />} />
+        <Route path="/patient/profile" element={isPatient ? <PatientProfile /> : <Navigate to="/" />} />
+        <Route path="/patient/analytics" element={isPatient ? <PatientAnalytics /> : <Navigate to="/" />} />
+
+        {/* Doctor Routes */}
+        <Route path="/doctor" element={isDoctor ? <DoctorDashboard /> : <Navigate to="/" />} />
+        <Route path="/doctor/analytics" element={isDoctor ? <DoctorAnalytics /> : <Navigate to="/" />} />
+        <Route path="/doctor/documents" element={isDoctor ? <DocumentCenter /> : <Navigate to="/" />} />
+        <Route path="/doctor/consultation/:id" element={isDoctor ? <ConsultationEditor /> : <Navigate to="/" />} />
+
+        {/* Patient Consultation View */}
+        <Route path="/patient/consultation/:id" element={isPatient ? <ConsultationEditor /> : <Navigate to="/" />} />
+
+        {/* Shared Routes */}
+        <Route path="/meeting/:id" element={user ? <MeetingRoom /> : <Navigate to="/" />} />
+      </Route>
+    </Routes>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <AppRoutes />
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 }
 
