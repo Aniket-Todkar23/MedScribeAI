@@ -37,6 +37,9 @@ class Consultation(Base):
     # Patient-friendly summary
     patient_summary = Column(Text, nullable=True)
 
+    # Raw AI extraction data (from entity extraction step)
+    extraction_data = Column(JSONB, default=dict)
+
     # Full EMR record (complete AI-generated structured data)
     emr_data = Column(JSONB, default=dict)
 

@@ -41,6 +41,7 @@ class ConsultationUpdate(BaseModel):
     icd_codes: Optional[List[ICDCodeItem]] = None
     prescription: Optional[List[PrescriptionItem]] = None
     patient_summary: Optional[str] = None
+    extraction_data: Optional[Dict[str, Any]] = None
     emr_data: Optional[Dict[str, Any]] = None
     status: Optional[str] = None  # draft, confirmed, reviewed
 
@@ -55,6 +56,7 @@ class ConsultationResponse(BaseModel):
     icd_codes: List[Dict[str, Any]] = []
     prescription: List[Dict[str, Any]] = []
     patient_summary: Optional[str] = None
+    extraction_data: Dict[str, Any] = {}
     emr_data: Dict[str, Any] = {}
     status: str = "draft"
     consultation_date: Optional[datetime] = None

@@ -19,6 +19,7 @@ from app.schemas.appointment import (
     AppointmentReject,
     AppointmentResponse,
     AppointmentUpdate,
+    DoctorScheduleAppointment,
 )
 
 router = APIRouter(prefix="/appointments", tags=["Appointments"])
@@ -55,6 +56,38 @@ async def create_appointment(
     appt = Appointment(
         doctor_id=body.doctor_id,
         patient_id=current_user.user_id,
+        appointment_date=body.appointment_date,
+        duration_minutes=body.duration_minutes,
+        appointment_type=body.appointment_type,
+        status="pending",
+        reason=body.reason,
+        notes=body.notes,
+    )
+    db.add(appt)
+    await db.flush()
+    return await _enrich(appt, db)
+
+
+@router.post("/schedule", response_model=AppointmentResponse, status_code=201)
+async def doctor_schedule_appointment(
+    body: DoctorScheduleAppointment,
+    current_user: CurrentUser = Depends(require_doctor),
+    db: AsyncSession = Depends(get_db),
+):
+    """Doctor schedules an appointment/meeting with a patient.
+    The patient must then approve or reject it."""
+    # Validate patient exists
+    pat = await db.execute(select(Patient).where(Patient.patient_id == body.patient_id))
+    if not pat.scalar_one_or_none():
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    # Validate future date
+    if body.appointment_date < datetime.now(timezone.utc):
+        raise HTTPException(status_code=400, detail="Appointment date must be in the future")
+
+    appt = Appointment(
+        doctor_id=current_user.user_id,
+        patient_id=body.patient_id,
         appointment_date=body.appointment_date,
         duration_minutes=body.duration_minutes,
         appointment_type=body.appointment_type,
@@ -141,16 +174,21 @@ async def get_appointment(
 @router.post("/{appointment_id}/approve", response_model=AppointmentResponse)
 async def approve_appointment(
     appointment_id: UUID,
-    current_user: CurrentUser = Depends(require_doctor),
+    current_user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Doctor approves a pending appointment."""
+    """Doctor or patient approves a pending appointment."""
     result = await db.execute(select(Appointment).where(Appointment.appointment_id == appointment_id))
     appt = result.scalar_one_or_none()
     if not appt:
         raise HTTPException(status_code=404, detail="Appointment not found")
-    if appt.doctor_id != current_user.user_id:
+
+    # Access check — must be the doctor or patient on this appointment
+    if current_user.is_doctor and appt.doctor_id != current_user.user_id:
         raise HTTPException(status_code=403, detail="Not your appointment")
+    if current_user.is_patient and appt.patient_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="Not your appointment")
+
     if appt.status != "pending":
         raise HTTPException(status_code=400, detail=f"Cannot approve appointment with status '{appt.status}'")
 
@@ -169,16 +207,21 @@ async def approve_appointment(
 async def reject_appointment(
     appointment_id: UUID,
     body: AppointmentReject,
-    current_user: CurrentUser = Depends(require_doctor),
+    current_user: CurrentUser = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    """Doctor rejects a pending appointment."""
+    """Doctor or patient rejects a pending appointment."""
     result = await db.execute(select(Appointment).where(Appointment.appointment_id == appointment_id))
     appt = result.scalar_one_or_none()
     if not appt:
         raise HTTPException(status_code=404, detail="Appointment not found")
-    if appt.doctor_id != current_user.user_id:
+
+    # Access check — must be the doctor or patient on this appointment
+    if current_user.is_doctor and appt.doctor_id != current_user.user_id:
         raise HTTPException(status_code=403, detail="Not your appointment")
+    if current_user.is_patient and appt.patient_id != current_user.user_id:
+        raise HTTPException(status_code=403, detail="Not your appointment")
+
     if appt.status != "pending":
         raise HTTPException(status_code=400, detail=f"Cannot reject appointment with status '{appt.status}'")
 

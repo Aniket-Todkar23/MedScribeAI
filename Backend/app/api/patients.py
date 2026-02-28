@@ -4,7 +4,7 @@ API Routes — Patients
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,8 +12,21 @@ from app.database import get_db
 from app.api.deps import CurrentUser, get_current_user, require_doctor, require_patient
 from app.models.user import Patient, PatientOnboarding
 from app.schemas.patient import OnboardingResponse, OnboardingSubmit, PatientProfile, PatientUpdate
+from typing import List, Optional
 
 router = APIRouter(prefix="/patients", tags=["Patients"])
+
+
+@router.get("", response_model=List[PatientProfile])
+async def list_patients(
+    current_user: CurrentUser = Depends(require_doctor),
+    db: AsyncSession = Depends(get_db),
+):
+    """Doctor lists all active patients."""
+    result = await db.execute(
+        select(Patient).where(Patient.is_active == True).order_by(Patient.full_name)
+    )
+    return [PatientProfile.model_validate(p) for p in result.scalars().all()]
 
 
 @router.get("/me", response_model=PatientProfile)

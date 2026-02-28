@@ -16,7 +16,7 @@ from app.database import engine, Base
 from app.models import user, appointment, consultation, document, chat_history, notification, audit  # noqa: F401
 
 # Import routers
-from app.api import auth, patients, doctors, appointments, consultations, documents, meetings, agent, ai_proxy, fhir
+from app.api import auth, patients, doctors, appointments, consultations, documents, meetings, agent, ai_proxy, fhir, drugs
 
 # Import compliance middleware
 from app.compliance.audit_middleware import AuditMiddleware
@@ -83,6 +83,7 @@ app.include_router(meetings.router, prefix=API_PREFIX)
 app.include_router(agent.router, prefix=API_PREFIX)
 app.include_router(ai_proxy.router, prefix=API_PREFIX)
 app.include_router(fhir.router, prefix=API_PREFIX)
+app.include_router(drugs.router, prefix=API_PREFIX)
 
 
 # ── Health Check ──────────────────────────────────────────────────────────────

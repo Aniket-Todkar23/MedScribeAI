@@ -268,6 +268,7 @@ async def process_consultation_audio(
 
     # 7. Persist everything
     consultation.transcription = transcript
+    consultation.extraction_data = extraction_resp
     consultation.emr_data = emr_record
     consultation.soap_note = soap
     consultation.icd_codes = icd_codes

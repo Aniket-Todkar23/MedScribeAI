@@ -1,0 +1,242 @@
+name,generic_name,category,common_doses,form
+Metformin,Metformin,Antidiabetic,"250mg,500mg,850mg,1000mg",Tablet
+Lisinopril,Lisinopril,ACE Inhibitor,"2.5mg,5mg,10mg,20mg,40mg",Tablet
+Atorvastatin,Atorvastatin,Statin,"10mg,20mg,40mg,80mg",Tablet
+Amlodipine,Amlodipine,Calcium Channel Blocker,"2.5mg,5mg,10mg",Tablet
+Omeprazole,Omeprazole,Proton Pump Inhibitor,"10mg,20mg,40mg",Capsule
+Losartan,Losartan,ARB,"25mg,50mg,100mg",Tablet
+Metoprolol,Metoprolol,Beta Blocker,"25mg,50mg,100mg,200mg",Tablet
+Levothyroxine,Levothyroxine,Thyroid Hormone,"25mcg,50mcg,75mcg,100mcg,125mcg,150mcg",Tablet
+Simvastatin,Simvastatin,Statin,"10mg,20mg,40mg,80mg",Tablet
+Hydrochlorothiazide,Hydrochlorothiazide,Diuretic,"12.5mg,25mg,50mg",Tablet
+Gabapentin,Gabapentin,Anticonvulsant,"100mg,300mg,400mg,600mg,800mg",Capsule
+Amoxicillin,Amoxicillin,Antibiotic,"250mg,500mg,875mg",Capsule
+Sertraline,Sertraline,SSRI Antidepressant,"25mg,50mg,100mg",Tablet
+Furosemide,Furosemide,Loop Diuretic,"20mg,40mg,80mg",Tablet
+Pantoprazole,Pantoprazole,Proton Pump Inhibitor,"20mg,40mg",Tablet
+Prednisone,Prednisone,Corticosteroid,"1mg,2.5mg,5mg,10mg,20mg,50mg",Tablet
+Albuterol,Albuterol,Bronchodilator,"90mcg/actuation,2mg,4mg",Inhaler
+Montelukast,Montelukast,Leukotriene Inhibitor,"4mg,5mg,10mg",Tablet
+Escitalopram,Escitalopram,SSRI Antidepressant,"5mg,10mg,20mg",Tablet
+Rosuvastatin,Rosuvastatin,Statin,"5mg,10mg,20mg,40mg",Tablet
+Tramadol,Tramadol,Opioid Analgesic,"50mg,100mg",Tablet
+Clopidogrel,Clopidogrel,Antiplatelet,"75mg",Tablet
+Duloxetine,Duloxetine,SNRI Antidepressant,"20mg,30mg,60mg",Capsule
+Tamsulosin,Tamsulosin,Alpha Blocker,"0.4mg",Capsule
+Pravastatin,Pravastatin,Statin,"10mg,20mg,40mg,80mg",Tablet
+Carvedilol,Carvedilol,Beta Blocker,"3.125mg,6.25mg,12.5mg,25mg",Tablet
+Meloxicam,Meloxicam,NSAID,"7.5mg,15mg",Tablet
+Fluticasone,Fluticasone,Corticosteroid (Inhaled),"44mcg,110mcg,220mcg,250mcg",Inhaler
+Warfarin,Warfarin,Anticoagulant,"1mg,2mg,2.5mg,3mg,4mg,5mg,6mg,7.5mg,10mg",Tablet
+Aspirin,Aspirin,Antiplatelet/Analgesic,"81mg,325mg,500mg",Tablet
+Ibuprofen,Ibuprofen,NSAID,"200mg,400mg,600mg,800mg",Tablet
+Acetaminophen,Acetaminophen,Analgesic,"325mg,500mg,650mg,1000mg",Tablet
+Naproxen,Naproxen,NSAID,"220mg,250mg,375mg,500mg",Tablet
+Ciprofloxacin,Ciprofloxacin,Antibiotic,"250mg,500mg,750mg",Tablet
+Azithromycin,Azithromycin,Antibiotic,"250mg,500mg",Tablet
+Cephalexin,Cephalexin,Antibiotic,"250mg,500mg",Capsule
+Doxycycline,Doxycycline,Antibiotic,"50mg,100mg",Capsule
+Clindamycin,Clindamycin,Antibiotic,"150mg,300mg",Capsule
+Metronidazole,Metronidazole,Antibiotic,"250mg,500mg",Tablet
+Sulfamethoxazole-Trimethoprim,Co-trimoxazole,Antibiotic,"400/80mg,800/160mg",Tablet
+Fluconazole,Fluconazole,Antifungal,"50mg,100mg,150mg,200mg",Tablet
+Insulin Glargine,Insulin Glargine,Insulin (Long-acting),"100 units/mL",Injection
+Insulin Lispro,Insulin Lispro,Insulin (Rapid-acting),"100 units/mL",Injection
+Insulin Aspart,Insulin Aspart,Insulin (Rapid-acting),"100 units/mL",Injection
+Insulin NPH,Insulin NPH,Insulin (Intermediate),"100 units/mL",Injection
+Glipizide,Glipizide,Sulfonylurea,"5mg,10mg",Tablet
+Glyburide,Glyburide,Sulfonylurea,"1.25mg,2.5mg,5mg",Tablet
+Pioglitazone,Pioglitazone,Thiazolidinedione,"15mg,30mg,45mg",Tablet
+Sitagliptin,Sitagliptin,DPP-4 Inhibitor,"25mg,50mg,100mg",Tablet
+Empagliflozin,Empagliflozin,SGLT2 Inhibitor,"10mg,25mg",Tablet
+Dapagliflozin,Dapagliflozin,SGLT2 Inhibitor,"5mg,10mg",Tablet
+Canagliflozin,Canagliflozin,SGLT2 Inhibitor,"100mg,300mg",Tablet
+Liraglutide,Liraglutide,GLP-1 Agonist,"0.6mg,1.2mg,1.8mg",Injection
+Semaglutide,Semaglutide,GLP-1 Agonist,"0.25mg,0.5mg,1mg,2mg",Injection
+Tirzepatide,Tirzepatide,GIP/GLP-1 Agonist,"2.5mg,5mg,7.5mg,10mg,12.5mg,15mg",Injection
+Valsartan,Valsartan,ARB,"40mg,80mg,160mg,320mg",Tablet
+Irbesartan,Irbesartan,ARB,"75mg,150mg,300mg",Tablet
+Telmisartan,Telmisartan,ARB,"20mg,40mg,80mg",Tablet
+Ramipril,Ramipril,ACE Inhibitor,"1.25mg,2.5mg,5mg,10mg",Capsule
+Enalapril,Enalapril,ACE Inhibitor,"2.5mg,5mg,10mg,20mg",Tablet
+Benazepril,Benazepril,ACE Inhibitor,"5mg,10mg,20mg,40mg",Tablet
+Diltiazem,Diltiazem,Calcium Channel Blocker,"30mg,60mg,90mg,120mg,180mg,240mg",Tablet
+Nifedipine,Nifedipine,Calcium Channel Blocker,"10mg,20mg,30mg,60mg,90mg",Tablet
+Propranolol,Propranolol,Beta Blocker,"10mg,20mg,40mg,60mg,80mg",Tablet
+Atenolol,Atenolol,Beta Blocker,"25mg,50mg,100mg",Tablet
+Bisoprolol,Bisoprolol,Beta Blocker,"2.5mg,5mg,10mg",Tablet
+Nebivolol,Nebivolol,Beta Blocker,"2.5mg,5mg,10mg,20mg",Tablet
+Spironolactone,Spironolactone,Potassium-sparing Diuretic,"25mg,50mg,100mg",Tablet
+Chlorthalidone,Chlorthalidone,Thiazide Diuretic,"12.5mg,25mg,50mg",Tablet
+Hydralazine,Hydralazine,Vasodilator,"10mg,25mg,50mg,100mg",Tablet
+Clonidine,Clonidine,Alpha-2 Agonist,"0.1mg,0.2mg,0.3mg",Tablet
+Doxazosin,Doxazosin,Alpha Blocker,"1mg,2mg,4mg,8mg",Tablet
+Apixaban,Apixaban,Anticoagulant (DOAC),"2.5mg,5mg",Tablet
+Rivaroxaban,Rivaroxaban,Anticoagulant (DOAC),"10mg,15mg,20mg",Tablet
+Dabigatran,Dabigatran,Anticoagulant (DOAC),"75mg,110mg,150mg",Capsule
+Enoxaparin,Enoxaparin,Anticoagulant (LMWH),"30mg,40mg,60mg,80mg,100mg,120mg",Injection
+Heparin,Heparin,Anticoagulant,"Various",Injection
+Ticagrelor,Ticagrelor,Antiplatelet,"60mg,90mg",Tablet
+Prasugrel,Prasugrel,Antiplatelet,"5mg,10mg",Tablet
+Fluoxetine,Fluoxetine,SSRI Antidepressant,"10mg,20mg,40mg,60mg",Capsule
+Paroxetine,Paroxetine,SSRI Antidepressant,"10mg,20mg,30mg,40mg",Tablet
+Citalopram,Citalopram,SSRI Antidepressant,"10mg,20mg,40mg",Tablet
+Venlafaxine,Venlafaxine,SNRI Antidepressant,"37.5mg,75mg,150mg",Capsule
+Bupropion,Bupropion,Antidepressant,"75mg,100mg,150mg,300mg",Tablet
+Mirtazapine,Mirtazapine,Antidepressant,"7.5mg,15mg,30mg,45mg",Tablet
+Trazodone,Trazodone,Antidepressant/Hypnotic,"50mg,100mg,150mg",Tablet
+Amitriptyline,Amitriptyline,Tricyclic Antidepressant,"10mg,25mg,50mg,75mg,100mg",Tablet
+Nortriptyline,Nortriptyline,Tricyclic Antidepressant,"10mg,25mg,50mg,75mg",Capsule
+Quetiapine,Quetiapine,Atypical Antipsychotic,"25mg,50mg,100mg,200mg,300mg,400mg",Tablet
+Olanzapine,Olanzapine,Atypical Antipsychotic,"2.5mg,5mg,10mg,15mg,20mg",Tablet
+Risperidone,Risperidone,Atypical Antipsychotic,"0.25mg,0.5mg,1mg,2mg,3mg,4mg",Tablet
+Aripiprazole,Aripiprazole,Atypical Antipsychotic,"2mg,5mg,10mg,15mg,20mg,30mg",Tablet
+Lithium,Lithium Carbonate,Mood Stabilizer,"150mg,300mg,600mg",Capsule
+Lamotrigine,Lamotrigine,Anticonvulsant/Mood Stabilizer,"25mg,50mg,100mg,150mg,200mg",Tablet
+Valproic Acid,Valproate,Anticonvulsant,"250mg,500mg",Capsule
+Carbamazepine,Carbamazepine,Anticonvulsant,"100mg,200mg,400mg",Tablet
+Oxcarbazepine,Oxcarbazepine,Anticonvulsant,"150mg,300mg,600mg",Tablet
+Topiramate,Topiramate,Anticonvulsant,"25mg,50mg,100mg,200mg",Tablet
+Levetiracetam,Levetiracetam,Anticonvulsant,"250mg,500mg,750mg,1000mg",Tablet
+Pregabalin,Pregabalin,Anticonvulsant/Analgesic,"25mg,50mg,75mg,100mg,150mg,200mg,300mg",Capsule
+Phenytoin,Phenytoin,Anticonvulsant,"30mg,100mg",Capsule
+Alprazolam,Alprazolam,Benzodiazepine,"0.25mg,0.5mg,1mg,2mg",Tablet
+Lorazepam,Lorazepam,Benzodiazepine,"0.5mg,1mg,2mg",Tablet
+Diazepam,Diazepam,Benzodiazepine,"2mg,5mg,10mg",Tablet
+Clonazepam,Clonazepam,Benzodiazepine,"0.5mg,1mg,2mg",Tablet
+Zolpidem,Zolpidem,Hypnotic,"5mg,10mg",Tablet
+Eszopiclone,Eszopiclone,Hypnotic,"1mg,2mg,3mg",Tablet
+Buspirone,Buspirone,Anxiolytic,"5mg,7.5mg,10mg,15mg,30mg",Tablet
+Hydroxyzine,Hydroxyzine,Antihistamine/Anxiolytic,"10mg,25mg,50mg",Tablet
+Cyclobenzaprine,Cyclobenzaprine,Muscle Relaxant,"5mg,10mg",Tablet
+Baclofen,Baclofen,Muscle Relaxant,"5mg,10mg,20mg",Tablet
+Tizanidine,Tizanidine,Muscle Relaxant,"2mg,4mg",Tablet
+Methocarbamol,Methocarbamol,Muscle Relaxant,"500mg,750mg",Tablet
+Diclofenac,Diclofenac,NSAID,"25mg,50mg,75mg",Tablet
+Celecoxib,Celecoxib,COX-2 Inhibitor,"100mg,200mg",Capsule
+Colchicine,Colchicine,Anti-gout,"0.6mg",Tablet
+Allopurinol,Allopurinol,Xanthine Oxidase Inhibitor,"100mg,300mg",Tablet
+Febuxostat,Febuxostat,Xanthine Oxidase Inhibitor,"40mg,80mg",Tablet
+Cetirizine,Cetirizine,Antihistamine,"5mg,10mg",Tablet
+Loratadine,Loratadine,Antihistamine,"10mg",Tablet
+Fexofenadine,Fexofenadine,Antihistamine,"60mg,180mg",Tablet
+Diphenhydramine,Diphenhydramine,Antihistamine,"25mg,50mg",Capsule
+Promethazine,Promethazine,Antihistamine/Antiemetic,"12.5mg,25mg,50mg",Tablet
+Ondansetron,Ondansetron,Antiemetic,"4mg,8mg",Tablet
+Metoclopramide,Metoclopramide,Prokinetic/Antiemetic,"5mg,10mg",Tablet
+Ranitidine,Ranitidine,H2 Blocker,"75mg,150mg,300mg",Tablet
+Famotidine,Famotidine,H2 Blocker,"10mg,20mg,40mg",Tablet
+Sucralfate,Sucralfate,Mucosal Protectant,"1g",Tablet
+Docusate Sodium,Docusate,Stool Softener,"100mg,250mg",Capsule
+Polyethylene Glycol,PEG 3350,Osmotic Laxative,"17g",Powder
+Bisacodyl,Bisacodyl,Stimulant Laxative,"5mg",Tablet
+Loperamide,Loperamide,Antidiarrheal,"2mg",Capsule
+Tiotropium,Tiotropium,Anticholinergic Bronchodilator,"18mcg",Inhaler
+Budesonide,Budesonide,Corticosteroid (Inhaled),"80mcg,160mcg",Inhaler
+Salmeterol,Salmeterol,LABA,"50mcg",Inhaler
+Formoterol,Formoterol,LABA,"12mcg",Inhaler
+Fluticasone-Salmeterol,Fluticasone/Salmeterol,ICS-LABA Combination,"100/50mcg,250/50mcg,500/50mcg",Inhaler
+Budesonide-Formoterol,Budesonide/Formoterol,ICS-LABA Combination,"80/4.5mcg,160/4.5mcg",Inhaler
+Ipratropium-Albuterol,Ipratropium/Albuterol,Anticholinergic/Bronchodilator,"0.5mg/3mg",Nebulizer
+Prednisone,Prednisone,Systemic Corticosteroid,"1mg,2.5mg,5mg,10mg,20mg,50mg",Tablet
+Methylprednisolone,Methylprednisolone,Systemic Corticosteroid,"4mg,8mg,16mg,32mg",Tablet
+Dexamethasone,Dexamethasone,Systemic Corticosteroid,"0.5mg,0.75mg,1mg,1.5mg,4mg,6mg",Tablet
+Triamcinolone,Triamcinolone,Topical Corticosteroid,"0.025%,0.1%,0.5%",Cream
+Hydrocortisone,Hydrocortisone,Topical Corticosteroid,"0.5%,1%,2.5%",Cream
+Betamethasone,Betamethasone,Topical Corticosteroid,"0.05%,0.1%",Cream
+Clobetasol,Clobetasol,Topical Corticosteroid,"0.05%",Cream
+Mupirocin,Mupirocin,Topical Antibiotic,"2%",Ointment
+Clotrimazole,Clotrimazole,Topical Antifungal,"1%",Cream
+Ketoconazole,Ketoconazole,Antifungal,"200mg,2%",Tablet
+Terbinafine,Terbinafine,Antifungal,"250mg",Tablet
+Acyclovir,Acyclovir,Antiviral,"200mg,400mg,800mg",Tablet
+Valacyclovir,Valacyclovir,Antiviral,"500mg,1000mg",Tablet
+Oseltamivir,Oseltamivir,Antiviral,"30mg,45mg,75mg",Capsule
+Sildenafil,Sildenafil,PDE5 Inhibitor,"20mg,25mg,50mg,100mg",Tablet
+Tadalafil,Tadalafil,PDE5 Inhibitor,"2.5mg,5mg,10mg,20mg",Tablet
+Finasteride,Finasteride,5-alpha Reductase Inhibitor,"1mg,5mg",Tablet
+Dutasteride,Dutasteride,5-alpha Reductase Inhibitor,"0.5mg",Capsule
+Oxybutynin,Oxybutynin,Anticholinergic,"5mg,10mg,15mg",Tablet
+Solifenacin,Solifenacin,Anticholinergic,"5mg,10mg",Tablet
+Donepezil,Donepezil,Cholinesterase Inhibitor,"5mg,10mg,23mg",Tablet
+Memantine,Memantine,NMDA Antagonist,"5mg,10mg",Tablet
+Carbidopa-Levodopa,Carbidopa/Levodopa,Antiparkinson,"10/100mg,25/100mg,25/250mg",Tablet
+Ropinirole,Ropinirole,Dopamine Agonist,"0.25mg,0.5mg,1mg,2mg,3mg,4mg,5mg",Tablet
+Pramipexole,Pramipexole,Dopamine Agonist,"0.125mg,0.25mg,0.5mg,0.75mg,1mg,1.5mg",Tablet
+Sumatriptan,Sumatriptan,Triptan,"25mg,50mg,100mg",Tablet
+Rizatriptan,Rizatriptan,Triptan,"5mg,10mg",Tablet
+Amoxicillin-Clavulanate,Amoxicillin/Clavulanate,Antibiotic,"250/125mg,500/125mg,875/125mg",Tablet
+Levofloxacin,Levofloxacin,Antibiotic,"250mg,500mg,750mg",Tablet
+Moxifloxacin,Moxifloxacin,Antibiotic,"400mg",Tablet
+Nitrofurantoin,Nitrofurantoin,Antibiotic,"50mg,100mg",Capsule
+Linezolid,Linezolid,Antibiotic,"600mg",Tablet
+Vancomycin,Vancomycin,Antibiotic,"125mg,250mg",Capsule
+Rifampin,Rifampin,Antibiotic,"150mg,300mg",Capsule
+Isoniazid,Isoniazid,Antitubercular,"100mg,300mg",Tablet
+Ethambutol,Ethambutol,Antitubercular,"100mg,400mg",Tablet
+Pyrazinamide,Pyrazinamide,Antitubercular,"500mg",Tablet
+Morphine,Morphine Sulfate,Opioid Analgesic,"15mg,30mg,60mg,100mg",Tablet
+Oxycodone,Oxycodone,Opioid Analgesic,"5mg,10mg,15mg,20mg,30mg",Tablet
+Hydrocodone-Acetaminophen,Hydrocodone/APAP,Opioid Analgesic,"5/325mg,7.5/325mg,10/325mg",Tablet
+Codeine,Codeine,Opioid Analgesic,"15mg,30mg,60mg",Tablet
+Fentanyl,Fentanyl,Opioid Analgesic,"12mcg/hr,25mcg/hr,50mcg/hr,75mcg/hr,100mcg/hr",Patch
+Naloxone,Naloxone,Opioid Antagonist,"4mg",Spray (Nasal)
+Buprenorphine-Naloxone,Buprenorphine/Naloxone,Opioid Partial Agonist,"2/0.5mg,4/1mg,8/2mg,12/3mg",Film
+Methadone,Methadone,Opioid Agonist,"5mg,10mg",Tablet
+Alendronate,Alendronate,Bisphosphonate,"35mg,70mg",Tablet
+Risedronate,Risedronate,Bisphosphonate,"35mg,150mg",Tablet
+Calcium Carbonate,Calcium Carbonate,Supplement,"500mg,600mg,1250mg",Tablet
+Vitamin D3,Cholecalciferol,Supplement,"400IU,1000IU,2000IU,5000IU,50000IU",Capsule
+Ferrous Sulfate,Iron Supplement,Supplement,"325mg",Tablet
+Folic Acid,Folic Acid,Supplement,"0.4mg,0.8mg,1mg",Tablet
+Potassium Chloride,KCl,Electrolyte,"10mEq,20mEq",Tablet
+Magnesium Oxide,Magnesium,Supplement,"250mg,400mg",Tablet
+Ezetimibe,Ezetimibe,Cholesterol Absorption Inhibitor,"10mg",Tablet
+Fenofibrate,Fenofibrate,Fibrate,"48mg,145mg",Tablet
+Gemfibrozil,Gemfibrozil,Fibrate,"600mg",Tablet
+Niacin,Niacin,Lipid-lowering,"500mg,750mg,1000mg",Tablet
+Digoxin,Digoxin,Cardiac Glycoside,"0.0625mg,0.125mg,0.25mg",Tablet
+Amiodarone,Amiodarone,Antiarrhythmic,"100mg,200mg",Tablet
+Flecainide,Flecainide,Antiarrhythmic,"50mg,100mg,150mg",Tablet
+Dronedarone,Dronedarone,Antiarrhythmic,"400mg",Tablet
+Isosorbide Mononitrate,Isosorbide,Nitrate,"30mg,60mg,120mg",Tablet
+Nitroglycerin,Nitroglycerin,Nitrate,"0.3mg,0.4mg,0.6mg",Sublingual Tablet
+Ranolazine,Ranolazine,Anti-anginal,"500mg,1000mg",Tablet
+Sacubitril-Valsartan,Sacubitril/Valsartan,ARNI,"24/26mg,49/51mg,97/103mg",Tablet
+Ivabradine,Ivabradine,HCN Channel Blocker,"5mg,7.5mg",Tablet
+Latanoprost,Latanoprost,Prostaglandin Analog,"0.005%",Drops (Eye)
+Timolol (Ophthalmic),Timolol,Beta Blocker (Ophthalmic),"0.25%,0.5%",Drops (Eye)
+Brimonidine,Brimonidine,Alpha Agonist (Ophthalmic),"0.1%,0.15%,0.2%",Drops (Eye)
+Dorzolamide,Dorzolamide,Carbonic Anhydrase Inhibitor,"2%",Drops (Eye)
+Artificial Tears,Carboxymethylcellulose,Ophthalmic Lubricant,"0.5%,1%",Drops (Eye)
+Ciprofloxacin (Ophthalmic),Ciprofloxacin Ophthalmic,Ophthalmic Antibiotic,"0.3%",Drops (Eye)
+Prednisolone (Ophthalmic),Prednisolone Acetate,Ophthalmic Corticosteroid,"1%",Drops (Eye)
+Methotrexate,Methotrexate,DMARD,"2.5mg,7.5mg,10mg,15mg,25mg",Tablet
+Hydroxychloroquine,Hydroxychloroquine,DMARD,"200mg",Tablet
+Sulfasalazine,Sulfasalazine,DMARD,"500mg",Tablet
+Leflunomide,Leflunomide,DMARD,"10mg,20mg",Tablet
+Adalimumab,Adalimumab,Biologic (TNF Inhibitor),"40mg",Injection
+Etanercept,Etanercept,Biologic (TNF Inhibitor),"25mg,50mg",Injection
+Infliximab,Infliximab,Biologic (TNF Inhibitor),"100mg vial",Injection
+Rituximab,Rituximab,Biologic (Anti-CD20),"100mg,500mg",Injection
+Tacrolimus,Tacrolimus,Immunosuppressant,"0.5mg,1mg,5mg",Capsule
+Mycophenolate,Mycophenolate,Immunosuppressant,"250mg,500mg",Capsule
+Cyclosporine,Cyclosporine,Immunosuppressant,"25mg,50mg,100mg",Capsule
+Azathioprine,Azathioprine,Immunosuppressant,"50mg",Tablet
+Tamoxifen,Tamoxifen,Antiestrogen,"10mg,20mg",Tablet
+Letrozole,Letrozole,Aromatase Inhibitor,"2.5mg",Tablet
+Anastrozole,Anastrozole,Aromatase Inhibitor,"1mg",Tablet
+Leuprolide,Leuprolide,GnRH Agonist,"3.75mg,7.5mg,22.5mg,45mg",Injection
+Medroxyprogesterone,Medroxyprogesterone,Progestin,"2.5mg,5mg,10mg,150mg",Tablet
+Norethindrone,Norethindrone,Progestin,"0.35mg,5mg",Tablet
+Estradiol,Estradiol,Estrogen,"0.5mg,1mg,2mg",Tablet
+Conjugated Estrogens,Premarin,Estrogen,"0.3mg,0.45mg,0.625mg,0.9mg,1.25mg",Tablet
+Testosterone,Testosterone Cypionate,Androgen,"100mg/mL,200mg/mL",Injection
+Liothyronine,Liothyronine,Thyroid Hormone,"5mcg,25mcg,50mcg",Tablet
+Methimazole,Methimazole,Antithyroid,"5mg,10mg",Tablet
+Propylthiouracil,PTU,Antithyroid,"50mg",Tablet
+Erythropoietin,Epoetin Alfa,Erythropoietin,"2000U,3000U,4000U,10000U",Injection
+Darbepoetin,Darbepoetin Alfa,Erythropoietin,"25mcg,40mcg,60mcg,100mcg",Injection
+Filgrastim,Filgrastim,Colony-stimulating Factor,"300mcg,480mcg",Injection
+Phytonadione,Vitamin K1,Coagulation Factor,"5mg",Tablet
+Tranexamic Acid,Tranexamic Acid,Antifibrinolytic,"650mg",Tablet

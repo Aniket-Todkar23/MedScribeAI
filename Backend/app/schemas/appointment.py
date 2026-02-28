@@ -19,6 +19,16 @@ class AppointmentCreate(BaseModel):
     notes: Optional[str] = None
 
 
+class DoctorScheduleAppointment(BaseModel):
+    """Doctor schedules a meeting with a patient."""
+    patient_id: UUID
+    appointment_date: datetime
+    duration_minutes: int = Field(30, ge=15, le=120)
+    appointment_type: str = "telehealth"
+    reason: Optional[str] = None
+    notes: Optional[str] = None
+
+
 class AppointmentUpdate(BaseModel):
     appointment_date: Optional[datetime] = None
     duration_minutes: Optional[int] = Field(None, ge=15, le=120)

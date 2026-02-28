@@ -3,6 +3,7 @@ LangGraph Agent — Patient Health Assistant
 """
 
 import logging
+import time
 import uuid
 from typing import Any, Dict, List, Optional
 
@@ -13,6 +14,22 @@ from app.agents.tools import create_patient_tools
 from app.compliance.pii_masker import deidentify_for_llm
 
 logger = logging.getLogger(__name__)
+
+# ── Gemini availability gate (cooldown after quota/rate errors) ───────────────
+_gemini_disabled_until: float = 0.0
+_GEMINI_COOLDOWN_SECONDS = 60  # wait 60s after a quota error before retrying
+
+
+def _gemini_is_available() -> bool:
+    """Return True unless Gemini was recently disabled due to quota errors."""
+    return time.time() >= _gemini_disabled_until
+
+
+def _disable_gemini() -> None:
+    """Temporarily disable Gemini for COOLDOWN seconds."""
+    global _gemini_disabled_until
+    _gemini_disabled_until = time.time() + _GEMINI_COOLDOWN_SECONDS
+    logger.info(f"Gemini disabled for {_GEMINI_COOLDOWN_SECONDS}s (quota cooldown)")
 
 
 async def _run_with_ollama(message, tools, chat_history):
@@ -62,7 +79,7 @@ async def run_patient_agent(
             temperature=0.3,
         )
 
-        agent = create_react_agent(llm, tools, state_modifier=PATIENT_SYSTEM_PROMPT)
+        agent = create_react_agent(llm, tools, prompt=PATIENT_SYSTEM_PROMPT)
 
         # Build message history
         messages = []
