@@ -10,6 +10,8 @@ import DoctorDashboard from './pages/DoctorDashboard';
 import DoctorAnalytics from './pages/DoctorAnalytics';
 import ConsultationEditor from './pages/ConsultationEditor';
 import MeetingRoom from './pages/MeetingRoom';
+import Meetings from './pages/Meetings';
+import FindDoctors from './pages/FindDoctors';
 import DocumentCenter from './pages/DocumentCenter';
 import { useAuthStore } from './store/authStore';
 
@@ -40,11 +42,14 @@ function AppRoutes() {
         <Route path="/patient/documents" element={isPatient ? <DocumentCenter /> : <Navigate to="/" />} />
         <Route path="/patient/profile" element={isPatient ? <PatientProfile /> : <Navigate to="/" />} />
         <Route path="/patient/analytics" element={isPatient ? <PatientAnalytics /> : <Navigate to="/" />} />
+        <Route path="/patient/meetings" element={isPatient ? <Meetings /> : <Navigate to="/" />} />
+        <Route path="/patient/doctors" element={isPatient ? <FindDoctors /> : <Navigate to="/" />} />
 
         {/* Doctor Routes */}
         <Route path="/doctor" element={isDoctor ? <DoctorDashboard /> : <Navigate to="/" />} />
         <Route path="/doctor/analytics" element={isDoctor ? <DoctorAnalytics /> : <Navigate to="/" />} />
         <Route path="/doctor/documents" element={isDoctor ? <DocumentCenter /> : <Navigate to="/" />} />
+        <Route path="/doctor/meetings" element={isDoctor ? <Meetings /> : <Navigate to="/" />} />
         <Route path="/doctor/consultation/:id" element={isDoctor ? <ConsultationEditor /> : <Navigate to="/" />} />
 
         {/* Patient Consultation View */}

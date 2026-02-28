@@ -5,7 +5,7 @@ import type {
   TokenResponse, LoginRequest, DoctorSignup, PatientSignup,
   PatientProfile, PatientUpdate, OnboardingData,
   DoctorProfile, DoctorUpdate, DoctorListItem,
-  AppointmentCreate, AppointmentResponse,
+  AppointmentCreate, AppointmentResponse, DoctorScheduleAppointment,
   ConsultationResponse, ConsultationUpdate,
   DocumentResponse, DocumentAnalysis,
   MeetingJoinToken, MeetingStatusResponse,
@@ -91,6 +91,9 @@ export const patientApi = {
   getById: (id: string) =>
     api.get<PatientProfile>(`/patients/${id}`),
 
+  getAll: () =>
+    api.get<PatientProfile[]>('/patients'),
+
   getOnboardingById: (id: string) =>
     api.get<OnboardingData>(`/patients/${id}/onboarding`),
 };
@@ -117,6 +120,9 @@ export const appointmentApi = {
   create: (data: AppointmentCreate) =>
     api.post<AppointmentResponse>('/appointments', data),
 
+  schedule: (data: DoctorScheduleAppointment) =>
+    api.post<AppointmentResponse>('/appointments/schedule', data),
+
   getAll: () =>
     api.get<AppointmentResponse[]>('/appointments'),
 
@@ -135,8 +141,8 @@ export const appointmentApi = {
   reject: (id: string, reason?: string) =>
     api.post<AppointmentResponse>(`/appointments/${id}/reject`, { reason }),
 
-  cancel: (id: string, reason?: string) =>
-    api.post<AppointmentResponse>(`/appointments/${id}/reject`, { reason }),
+  cancel: (id: string) =>
+    api.delete<AppointmentResponse>(`/appointments/${id}`),
 };
 
 // ── Consultations ────────────────────────────────────────────────────────────
@@ -208,6 +214,9 @@ export const meetingApi = {
 
   end: (appointmentId: string) =>
     api.post(`/meetings/${appointmentId}/end`),
+
+  leave: (appointmentId: string) =>
+    api.post(`/meetings/${appointmentId}/leave`),
 };
 
 // ── Agent ────────────────────────────────────────────────────────────────────
@@ -245,6 +254,32 @@ export const fhirApi = {
 
   getMedicationRequest: (consultationId: string) =>
     api.get<FHIRBundle>(`/fhir/MedicationRequest/${consultationId}`),
+
+  getBundle: (consultationId: string) =>
+    api.get<FHIRBundle>(`/fhir/Bundle/consultation/${consultationId}`),
+
+  downloadBundle: (consultationId: string) =>
+    api.get(`/fhir/Bundle/consultation/${consultationId}/download`, { responseType: 'blob' }),
+
+  downloadPatientEmr: () =>
+    api.get('/fhir/export/patient-emr', { responseType: 'blob' }),
+};
+
+// ── Drug Search ──────────────────────────────────────────────────────────────
+
+export const drugApi = {
+  search: (query: string, limit = 20) =>
+    api.get<{ name: string; generic_name: string; category: string; common_doses: string; form: string }[]>(
+      '/drugs/search', { params: { q: query, limit } }
+    ),
+
+  options: () =>
+    api.get<{
+      dosage_forms: string[];
+      frequencies: string[];
+      durations: string[];
+      routes: string[];
+    }>('/drugs/options'),
 };
 
 // ── AI Proxy ─────────────────────────────────────────────────────────────────
@@ -258,6 +293,9 @@ export const aiProxyApi = {
 
   suggestDiagnoses: (symptoms: string) =>
     api.post('/ai/suggest-diagnoses', { symptoms }),
+
+  icdLookup: (query: string, version: number = 10, limit: number = 15) =>
+    api.post('/ai/icd-lookup', { query, version, limit }),
 };
 
 export { api };

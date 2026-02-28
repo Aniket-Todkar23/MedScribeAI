@@ -33,6 +33,8 @@ export default function Navbar() {
                 {user.user_type === 'patient' && (
                   <div className="flex items-center gap-2">
                     <Link to="/patient" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link>
+                    <Link to="/patient/meetings" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Meetings</Link>
+                    <Link to="/patient/doctors" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Find Doctors</Link>
                     <Link to="/patient/documents" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Documents</Link>
                     <Link to="/patient/profile" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Profile</Link>
                     <Link to="/patient/analytics" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Analytics</Link>
@@ -41,6 +43,7 @@ export default function Navbar() {
                 {user.user_type === 'doctor' && (
                   <div className="flex items-center gap-2">
                     <Link to="/doctor" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Dashboard</Link>
+                    <Link to="/doctor/meetings" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Meetings</Link>
                     <Link to="/doctor/analytics" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Analytics</Link>
                     <Link to="/doctor/documents" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Documents</Link>
                   </div>
@@ -94,6 +97,8 @@ export default function Navbar() {
                   {user.user_type === 'patient' && (
                     <>
                       <Link to="/patient" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-secondary/50 transition-colors">Dashboard</Link>
+                      <Link to="/patient/meetings" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-secondary/50 transition-colors">Meetings</Link>
+                      <Link to="/patient/doctors" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-secondary/50 transition-colors">Find Doctors</Link>
                       <Link to="/patient/documents" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-secondary/50 transition-colors">Documents</Link>
                       <Link to="/patient/profile" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-secondary/50 transition-colors">Profile</Link>
                       <Link to="/patient/analytics" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-secondary/50 transition-colors">Analytics</Link>
@@ -102,6 +107,7 @@ export default function Navbar() {
                   {user.user_type === 'doctor' && (
                     <>
                       <Link to="/doctor" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-secondary/50 transition-colors">Dashboard</Link>
+                      <Link to="/doctor/meetings" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-secondary/50 transition-colors">Meetings</Link>
                       <Link to="/doctor/analytics" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-secondary/50 transition-colors">Analytics</Link>
                       <Link to="/doctor/documents" onClick={() => setIsOpen(false)} className="block px-3 py-2 rounded-lg text-sm font-medium text-foreground hover:bg-secondary/50 transition-colors">Documents</Link>
                     </>

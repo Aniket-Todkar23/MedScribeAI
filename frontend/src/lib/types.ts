@@ -146,6 +146,15 @@ export interface AppointmentCreate {
   notes?: string;
 }
 
+export interface DoctorScheduleAppointment {
+  patient_id: string;
+  appointment_date: string;
+  duration_minutes?: number;
+  appointment_type?: string;
+  reason?: string;
+  notes?: string;
+}
+
 export interface AppointmentResponse {
   appointment_id: string;
   doctor_id: string;
@@ -414,4 +423,21 @@ export interface FHIRBundle {
 
 export interface FHIREntry {
   resource: Record<string, any>;
+}
+
+// ── Drug Search ──────────────────────────────────────────────────────────────
+
+export interface DrugResult {
+  name: string;
+  generic_name: string;
+  category: string;
+  common_doses: string;
+  form: string;
+}
+
+export interface DrugOptions {
+  dosage_forms: string[];
+  frequencies: string[];
+  durations: string[];
+  routes: string[];
 }

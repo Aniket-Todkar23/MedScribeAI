@@ -131,7 +131,7 @@ export default function PatientAgentChat() {
                       "px-4 py-2.5 rounded-2xl text-sm shadow-sm",
                       msg.role === 'user' 
                         ? "bg-primary text-primary-foreground rounded-tr-sm" 
-                        : "bg-white dark:bg-slate-800 border border-border text-foreground rounded-tl-sm"
+                        : "bg-secondary text-secondary-foreground border border-border rounded-tl-sm"
                     )}
                   >
                     {msg.role === 'assistant' ? (
@@ -149,7 +149,7 @@ export default function PatientAgentChat() {
               ))}
               
               {isLoading && (
-                <div className="flex items-center gap-2 text-muted-foreground mr-auto bg-white dark:bg-slate-800 border border-border px-4 py-3 rounded-2xl rounded-tl-sm w-fit shadow-sm">
+                <div className="flex items-center gap-2 text-muted-foreground mr-auto bg-secondary border border-border px-4 py-3 rounded-2xl rounded-tl-sm w-fit shadow-sm">
                   <Activity className="w-4 h-4 text-primary animate-pulse" />
                   <span className="text-xs font-medium animate-pulse">Analyzing records...</span>
                 </div>
