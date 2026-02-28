@@ -36,16 +36,16 @@ export default function PatientAnalytics() {
     queryFn: () => appointmentApi.getAll().then(r => r.data),
   });
 
-  // Download FHIR patient record
+  // Download full patient EMR as PDF
   const handleDownloadFHIR = async () => {
     if (!patientId) return;
     try {
-      const res = await fhirApi.getPatient(patientId);
-      const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: 'application/json' });
+      const res = await fhirApi.downloadPatientEmr();
+      const blob = new Blob([res.data], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `FHIR_Patient_${profile?.full_name?.replace(/\s+/g, '_') || patientId}.json`;
+      a.download = `EMR_${profile?.full_name?.replace(/\s+/g, '_') || patientId}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch { /* ignore */ }
@@ -90,7 +90,7 @@ export default function PatientAnalytics() {
           <p className="text-muted-foreground mt-1">Your health trends, conditions, and recovery plans.</p>
         </div>
         <button onClick={handleDownloadFHIR} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-medium hover:bg-primary/90 transition-colors shadow-md">
-          <Download className="w-4 h-4" /> Download FHIR Record
+          <Download className="w-4 h-4" /> Download My EMR
         </button>
       </header>
 

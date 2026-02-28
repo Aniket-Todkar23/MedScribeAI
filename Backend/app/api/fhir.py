@@ -456,6 +456,264 @@ def _header_footer(canvas, doc):
     canvas.restoreState()
 
 
+def _build_visit_report_pdf(patient, onboarding, consultation, doctor, appointment) -> bytes:
+    """Build a single-visit PDF report with patient basics and consultation details."""
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buf, pagesize=A4,
+        leftMargin=24 * mm, rightMargin=24 * mm,
+        topMargin=60, bottomMargin=40,
+    )
+    st = _pdf_styles()
+    story: List[Any] = []
+    usable_width = A4[0] - doc.leftMargin - doc.rightMargin
+
+    # ── Visit Header ──
+    date_str = consultation.consultation_date.strftime("%B %d, %Y") if consultation.consultation_date else "N/A"
+    doctor_name = f"Dr. {doctor.full_name}" if doctor else "N/A"
+    specialization = doctor.specialization if doctor else ""
+    visit_type = (appointment.appointment_type or "in_person").replace("_", " ").title() if appointment else "Visit"
+    reason = appointment.reason if appointment else ""
+
+    visit_header_data = [[
+        Paragraph(f"<b>Visit Report</b>  —  {date_str}", st["body"]),
+        Paragraph(f"<font color='{_ACCENT}'><b>{visit_type}</b></font>",
+                  ParagraphStyle("vr_r", parent=st["body"], alignment=TA_RIGHT)),
+    ]]
+    vht = Table(visit_header_data, colWidths=[usable_width * 0.65, usable_width * 0.35], hAlign="LEFT")
+    vht.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), _PRIMARY_LT),
+        ("BOX", (0, 0), (-1, -1), 0.5, _PRIMARY),
+        ("TOPPADDING", (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("LEFTPADDING", (0, 0), (-1, -1), 10),
+        ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+    ]))
+    story.append(vht)
+    story.append(Spacer(1, 10))
+
+    # ── Patient Information ──
+    story.append(Paragraph("Patient Information", st["section"]))
+    story.append(HRFlowable(width="100%", thickness=1, color=_PRIMARY, spaceAfter=6))
+
+    demo_data = [
+        ["Full Name", patient.full_name, "Email", patient.email],
+        ["Phone", patient.phone or "N/A", "Date of Birth", str(patient.date_of_birth) if patient.date_of_birth else "N/A"],
+        ["Gender", (patient.gender or "N/A").capitalize(), "Blood Group", patient.blood_group or "N/A"],
+    ]
+    tbl_data = []
+    for row in demo_data:
+        tbl_data.append([
+            Paragraph(row[0], st["label"]),
+            Paragraph(str(row[1]), st["value"]),
+            Paragraph(row[2], st["label"]),
+            Paragraph(str(row[3]), st["value"]),
+        ])
+    col_w = [usable_width * 0.18, usable_width * 0.32, usable_width * 0.18, usable_width * 0.32]
+    t = Table(tbl_data, colWidths=col_w, hAlign="LEFT")
+    t.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), _PRIMARY_LT),
+        ("BOX", (0, 0), (-1, -1), 0.5, _BORDER),
+        ("INNERGRID", (0, 0), (-1, -1), 0.25, _BORDER),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    story.append(t)
+    story.append(Spacer(1, 10))
+
+    # ── Attending Physician ──
+    story.append(Paragraph("Attending Physician", st["section"]))
+    story.append(HRFlowable(width="100%", thickness=1, color=_PRIMARY, spaceAfter=6))
+    doc_info = [
+        [Paragraph("Doctor", st["label"]), Paragraph(doctor_name, st["value"]),
+         Paragraph("Specialization", st["label"]), Paragraph(specialization or "General Practice", st["value"])],
+    ]
+    if reason:
+        doc_info.append([
+            Paragraph("Reason for Visit", st["label"]), Paragraph(reason, st["value"]),
+            Paragraph("Status", st["label"]),
+            Paragraph((consultation.status or "unknown").capitalize(), st["value"]),
+        ])
+    dt = Table(doc_info, colWidths=col_w, hAlign="LEFT")
+    dt.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, -1), _ACCENT_LT),
+        ("BOX", (0, 0), (-1, -1), 0.5, _BORDER),
+        ("INNERGRID", (0, 0), (-1, -1), 0.25, _BORDER),
+        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("TOPPADDING", (0, 0), (-1, -1), 5),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ("LEFTPADDING", (0, 0), (-1, -1), 6),
+    ]))
+    story.append(dt)
+    story.append(Spacer(1, 10))
+
+    # ── Vitals ──
+    vitals = (consultation.emr_data or {}).get("vitals", {}) if consultation.emr_data else {}
+    if vitals:
+        story.append(Paragraph("Vitals at Visit", st["section"]))
+        story.append(HRFlowable(width="100%", thickness=1, color=_PRIMARY, spaceAfter=6))
+        vitals_data = [[
+            Paragraph("Blood Pressure", st["label"]),
+            Paragraph(str(vitals.get("blood_pressure", "N/A")), st["value"]),
+            Paragraph("Heart Rate", st["label"]),
+            Paragraph(str(vitals.get("heart_rate", "N/A")), st["value"]),
+        ], [
+            Paragraph("Temperature", st["label"]),
+            Paragraph(str(vitals.get("temperature", "N/A")), st["value"]),
+            Paragraph("SpO2", st["label"]),
+            Paragraph(str(vitals.get("spo2", "N/A")), st["value"]),
+        ]]
+        vt = Table(vitals_data, colWidths=col_w, hAlign="LEFT")
+        vt.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), HexColor("#f0fdf4")),
+            ("BOX", (0, 0), (-1, -1), 0.5, _BORDER),
+            ("INNERGRID", (0, 0), (-1, -1), 0.25, _BORDER),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+            ("LEFTPADDING", (0, 0), (-1, -1), 6),
+        ]))
+        story.append(vt)
+        story.append(Spacer(1, 10))
+
+    # ── SOAP Note ──
+    soap = consultation.soap_note or {}
+    if any(soap.values()):
+        story.append(Paragraph("Clinical Notes (SOAP)", st["section"]))
+        story.append(HRFlowable(width="100%", thickness=1, color=_PRIMARY, spaceAfter=6))
+        soap_colors = {
+            "subjective": HexColor("#dbeafe"), "objective": HexColor("#d1fae5"),
+            "assessment": HexColor("#fef3c7"), "plan": HexColor("#ede9fe"),
+        }
+        soap_label_colors = {
+            "subjective": HexColor("#1e40af"), "objective": HexColor("#065f46"),
+            "assessment": HexColor("#92400e"), "plan": HexColor("#5b21b6"),
+        }
+        soap_items: List[Any] = []
+        for key in ("subjective", "objective", "assessment", "plan"):
+            val = soap.get(key, "")
+            if val:
+                lbl_style = ParagraphStyle(f"vr_soap_{key}", parent=st["soap_label"], textColor=soap_label_colors[key])
+                soap_items.append([
+                    Paragraph(key.upper()[0], lbl_style),
+                    Paragraph(f"<b>{key.capitalize()}</b>", lbl_style),
+                    Paragraph(str(val), st["soap_text"]),
+                ])
+        if soap_items:
+            soap_tbl = Table(soap_items, colWidths=[usable_width * 0.04, usable_width * 0.14, usable_width * 0.82], hAlign="LEFT")
+            style_cmds: list = [
+                ("BOX", (0, 0), (-1, -1), 0.5, _BORDER),
+                ("INNERGRID", (0, 0), (-1, -1), 0.25, _BORDER),
+                ("VALIGN", (0, 0), (-1, -1), "TOP"),
+                ("TOPPADDING", (0, 0), (-1, -1), 5),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+                ("LEFTPADDING", (0, 0), (-1, -1), 5),
+            ]
+            soap_keys = [k for k in ("subjective", "objective", "assessment", "plan") if soap.get(k)]
+            for i, k in enumerate(soap_keys):
+                style_cmds.append(("BACKGROUND", (0, i), (0, i), soap_colors[k]))
+                style_cmds.append(("BACKGROUND", (1, i), (1, i), soap_colors[k]))
+            soap_tbl.setStyle(TableStyle(style_cmds))
+            story.append(soap_tbl)
+            story.append(Spacer(1, 8))
+
+    # ── ICD Codes / Diagnoses ──
+    if consultation.icd_codes:
+        story.append(Paragraph("Diagnoses", st["section"]))
+        story.append(HRFlowable(width="100%", thickness=1, color=_PRIMARY, spaceAfter=6))
+        icd_tbl_data = [[
+            Paragraph("Code", st["table_header"]),
+            Paragraph("Description", st["table_header"]),
+            Paragraph("Version", st["table_header"]),
+        ]]
+        for ic in consultation.icd_codes:
+            icd_tbl_data.append([
+                Paragraph(ic.get("code", ""), st["table_cell"]),
+                Paragraph(ic.get("description", ""), st["table_cell"]),
+                Paragraph(f"ICD-{ic.get('version', 10)}", st["table_cell"]),
+            ])
+        icd_t = Table(icd_tbl_data, colWidths=[usable_width * 0.18, usable_width * 0.65, usable_width * 0.17], hAlign="LEFT")
+        icd_style: list = [
+            ("BACKGROUND", (0, 0), (-1, 0), _TABLE_HDR),
+            ("BOX", (0, 0), (-1, -1), 0.5, _BORDER),
+            ("INNERGRID", (0, 0), (-1, -1), 0.25, _BORDER),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ("LEFTPADDING", (0, 0), (-1, -1), 5),
+        ]
+        for i in range(1, len(icd_tbl_data)):
+            if i % 2 == 0:
+                icd_style.append(("BACKGROUND", (0, i), (-1, i), _TABLE_ALT))
+        icd_t.setStyle(TableStyle(icd_style))
+        story.append(icd_t)
+        story.append(Spacer(1, 8))
+
+    # ── Prescription ──
+    if consultation.prescription:
+        story.append(Paragraph("Prescription", st["section"]))
+        story.append(HRFlowable(width="100%", thickness=1, color=_ACCENT, spaceAfter=6))
+        rx_tbl_data = [[
+            Paragraph("Medication", st["table_header"]),
+            Paragraph("Dose", st["table_header"]),
+            Paragraph("Frequency", st["table_header"]),
+            Paragraph("Duration", st["table_header"]),
+            Paragraph("Notes", st["table_header"]),
+        ]]
+        for rx in consultation.prescription:
+            rx_tbl_data.append([
+                Paragraph(rx.get("drug", ""), st["table_cell"]),
+                Paragraph(rx.get("dose", ""), st["table_cell"]),
+                Paragraph(rx.get("frequency", ""), st["table_cell"]),
+                Paragraph(rx.get("duration", ""), st["table_cell"]),
+                Paragraph(rx.get("notes", ""), st["table_cell"]),
+            ])
+        rx_t = Table(
+            rx_tbl_data,
+            colWidths=[usable_width * 0.24, usable_width * 0.14, usable_width * 0.18, usable_width * 0.16, usable_width * 0.28],
+            hAlign="LEFT",
+        )
+        rx_style: list = [
+            ("BACKGROUND", (0, 0), (-1, 0), _RX_HDR),
+            ("BOX", (0, 0), (-1, -1), 0.5, _BORDER),
+            ("INNERGRID", (0, 0), (-1, -1), 0.25, _BORDER),
+            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+            ("TOPPADDING", (0, 0), (-1, -1), 4),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+            ("LEFTPADDING", (0, 0), (-1, -1), 5),
+        ]
+        for i in range(1, len(rx_tbl_data)):
+            if i % 2 == 0:
+                rx_style.append(("BACKGROUND", (0, i), (-1, i), _RX_ALT))
+        rx_t.setStyle(TableStyle(rx_style))
+        story.append(rx_t)
+        story.append(Spacer(1, 8))
+
+    # ── Patient Summary ──
+    if consultation.patient_summary:
+        story.append(Paragraph("Visit Summary", st["section"]))
+        story.append(HRFlowable(width="100%", thickness=1, color=_PRIMARY, spaceAfter=6))
+        summary_tbl = Table(
+            [[Paragraph(consultation.patient_summary, st["body"])]],
+            colWidths=[usable_width],
+            hAlign="LEFT",
+        )
+        summary_tbl.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, -1), HexColor("#eff6ff")),
+            ("BOX", (0, 0), (-1, -1), 0.5, _PRIMARY),
+            ("TOPPADDING", (0, 0), (-1, -1), 8),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+            ("LEFTPADDING", (0, 0), (-1, -1), 10),
+        ]))
+        story.append(summary_tbl)
+
+    # Build PDF
+    doc.build(story, onFirstPage=_header_footer, onLaterPages=_header_footer)
+    return buf.getvalue()
+
+
 def _build_emr_pdf(patient, onboarding, consultations: list, documents: list) -> bytes:
     """Build a professional, color-coded PDF EMR record."""
     buf = io.BytesIO()
@@ -768,6 +1026,61 @@ def _build_emr_pdf(patient, onboarding, consultations: list, documents: list) ->
     # Build PDF
     doc.build(story, onFirstPage=_header_footer, onLaterPages=_header_footer)
     return buf.getvalue()
+
+
+@router.get("/export/visit-report/{consultation_id}")
+async def export_visit_report_pdf(
+    consultation_id: UUID,
+    current_user: CurrentUser = Depends(require_patient),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Export a single visit/consultation as a professional PDF.
+    Includes: patient basics, that visit's SOAP, vitals, ICD codes, prescriptions.
+    """
+    patient_id = current_user.user_id
+
+    # Load patient
+    pat_result = await db.execute(select(Patient).where(Patient.patient_id == patient_id))
+    patient = pat_result.scalar_one_or_none()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    # Load onboarding for medical history context
+    ob_result = await db.execute(select(PatientOnboarding).where(PatientOnboarding.patient_id == patient_id))
+    onboarding = ob_result.scalar_one_or_none()
+
+    # Load the specific consultation
+    con_result = await db.execute(
+        select(Consultation).where(
+            Consultation.consultation_id == consultation_id,
+            Consultation.patient_id == patient_id,
+        )
+    )
+    consultation = con_result.scalar_one_or_none()
+    if not consultation:
+        raise HTTPException(status_code=404, detail="Consultation not found")
+
+    # Load doctor for the visit
+    doc_result = await db.execute(select(Doctor).where(Doctor.doctor_id == consultation.doctor_id))
+    doctor = doc_result.scalar_one_or_none()
+
+    # Load appointment for the visit context
+    apt_result = await db.execute(
+        select(Appointment).where(Appointment.appointment_id == consultation.appointment_id)
+    )
+    appointment = apt_result.scalar_one_or_none()
+
+    pdf_bytes = _build_visit_report_pdf(patient, onboarding, consultation, doctor, appointment)
+
+    date_str = consultation.consultation_date.strftime("%Y%m%d") if consultation.consultation_date else "visit"
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="Visit_Report_{patient.full_name.replace(" ", "_")}_{date_str}.pdf"'
+        },
+    )
 
 
 @router.get("/export/patient-emr")

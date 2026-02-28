@@ -263,6 +263,9 @@ export const fhirApi = {
 
   downloadPatientEmr: () =>
     api.get('/fhir/export/patient-emr', { responseType: 'blob' }),
+
+  downloadVisitReport: (consultationId: string) =>
+    api.get(`/fhir/export/visit-report/${consultationId}`, { responseType: 'blob' }),
 };
 
 // ── Drug Search ──────────────────────────────────────────────────────────────

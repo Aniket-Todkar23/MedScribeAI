@@ -342,13 +342,14 @@ export default function ConsultationEditor() {
   };
 
   const downloadPatientEMR = async () => {
+    if (!consultation) return;
     try {
-      const res = await fhirApi.downloadPatientEmr();
+      const res = await fhirApi.downloadVisitReport(consultation.consultation_id);
       const blob = new Blob([res.data], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `my_emr_record.pdf`;
+      a.download = `visit_report_${consultation.consultation_id}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch { /* silent */ }
@@ -426,7 +427,7 @@ export default function ConsultationEditor() {
           )}
           {!isDoctor && (
             <button onClick={downloadPatientEMR} className="px-3 py-2 bg-muted text-foreground rounded-xl text-sm font-medium hover:bg-muted/80 flex items-center gap-2 transition-colors">
-              <Download className="w-4 h-4" /> Export My EMR
+              <Download className="w-4 h-4" /> Export Visit Report
             </button>
           )}
           {isDoctor && (
