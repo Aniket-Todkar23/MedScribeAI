@@ -8,7 +8,7 @@ import type { AppointmentResponse, DoctorListItem } from '../lib/types';
 import { format, parseISO, isPast, isFuture, differenceInDays, differenceInHours } from 'date-fns';
 import {
   Calendar, FileText, Activity, ChevronRight, Clock, Video, Users,
-  Heart, Pill, TrendingUp, Plus, Loader2, CheckCircle2,
+  Heart, Pill, Plus, Loader2, CheckCircle2,
   BarChart3, Thermometer, Droplets, Wind, AlertTriangle, X,
 } from 'lucide-react';
 
@@ -102,8 +102,6 @@ export default function PatientDashboard() {
 
   const upcomingApts = appointments.filter((a: AppointmentResponse) => isFuture(parseISO(a.appointment_date)) && a.status !== 'cancelled');
   const pastApts = appointments.filter((a: AppointmentResponse) => isPast(parseISO(a.appointment_date)));
-  const cancelledCount = appointments.filter((a: AppointmentResponse) => a.status === 'cancelled').length;
-
   const hasConditions = onboarding && (onboarding.has_diabetes || onboarding.has_heart_disease || onboarding.has_lung_disease);
 
   // Latest vitals from most recent consultation

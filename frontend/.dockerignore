@@ -1,0 +1,13 @@
+# Dependency directories
+node_modules/
+
+# Build output (rebuilt inside container)
+dist/
+
+# Dev / editor files
+.git
+.gitignore
+*.md
+.vscode/
+.env
+.env.*

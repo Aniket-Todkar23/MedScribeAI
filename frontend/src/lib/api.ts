@@ -1,4 +1,4 @@
-/* ── Smart EMR — Typed API Client Layer ──────────────────────────────────────── */
+/* ── MedScribe AI — Typed API Client Layer ─────────────────────────────────── */
 
 import axios from 'axios';
 import type {
@@ -7,7 +7,7 @@ import type {
   DoctorProfile, DoctorUpdate, DoctorListItem,
   AppointmentCreate, AppointmentResponse, DoctorScheduleAppointment,
   ConsultationResponse, ConsultationUpdate,
-  DocumentResponse, DocumentAnalysis,
+  DocumentResponse,
   MeetingJoinToken, MeetingStatusResponse,
   AgentChatResponse,
   FHIRBundle,
@@ -16,7 +16,7 @@ import type {
 // ── Axios Instance ───────────────────────────────────────────────────────────
 
 const api = axios.create({
-  baseURL: 'http://localhost:3001/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api/v1',
 });
 
 // Attach JWT on every request
@@ -38,7 +38,7 @@ api.interceptors.response.use(
       const refresh = localStorage.getItem('refresh_token');
       if (refresh) {
         try {
-          const res = await axios.post<TokenResponse>('http://localhost:3001/api/v1/auth/refresh', { refresh_token: refresh });
+          const res = await axios.post<TokenResponse>(`${api.defaults.baseURL}/auth/refresh`, { refresh_token: refresh });
           localStorage.setItem('access_token', res.data.access_token);
           localStorage.setItem('refresh_token', res.data.refresh_token);
           original.headers.Authorization = `Bearer ${res.data.access_token}`;

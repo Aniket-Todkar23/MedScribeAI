@@ -44,7 +44,7 @@ function ICDSearchDropdown({ onSelect, version }: { onSelect: (code: ICDCodeItem
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const doSearch = useCallback(async (q: string) => {
@@ -136,7 +136,7 @@ function DrugSearchInput({ value, onChange, onSelectDrug }: {
   const [results, setResults] = useState<DrugResult[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-  const debounceRef = useRef<ReturnType<typeof setTimeout>>();
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const doSearch = useCallback(async (q: string) => {
