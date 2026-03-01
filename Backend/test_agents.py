@@ -25,7 +25,7 @@ async def main():
             "password": "test1234",
             "specialization": "Neurology",
             "license_number": "AGT-001",
-            "hospital_name": "Smart EMR Hospital",
+            "hospital_name": "MedScribe AI Hospital",
             "phone": "+911111111111",
         })
         if r.status_code == 409:

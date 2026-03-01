@@ -1,9 +1,9 @@
-version: "3.9"
+name: medscribe-ai
 
 services:
-  postgres:
+  postgresdb:
     image: postgres:16-alpine
-    container_name: smartemr-postgres
+    container_name: postgresdb
     environment:
       POSTGRES_DB: smartemr
       POSTGRES_USER: smartemr
@@ -20,7 +20,7 @@ services:
 
   livekit:
     image: livekit/livekit-server:latest
-    container_name: smartemr-livekit
+    container_name: livekit
     ports:
       - "7880:7880"
       - "7881:7881"
@@ -29,11 +29,11 @@ services:
     environment:
       LIVEKIT_KEYS: "devkey: secret"
 
-  ai-core:
+  ai_backend:
     build:
       context: .
       dockerfile: AI_Backend/Dockerfile
-    container_name: smartemr-ai-core
+    container_name: ai_backend
     ports:
       - "8000:8000"
     env_file:
@@ -46,11 +46,11 @@ services:
       ICD10_CSV_PATH: /app/data/unique_icd10_codes.csv
     restart: unless-stopped
 
-  server:
+  backend:
     build:
       context: ./Backend
       dockerfile: Dockerfile
-    container_name: smartemr-server
+    container_name: backend
     ports:
       - "3001:3001"
     extra_hosts:
@@ -59,17 +59,17 @@ services:
       - Backend/.env
     environment:
       # Override localhost URLs with Docker service names
-      DATABASE_URL: postgresql+asyncpg://smartemr:smartemr_dev_2026@postgres:5432/smartemr
-      AI_BACKEND_URL: http://ai-core:8000/api/v1
+      DATABASE_URL: postgresql+asyncpg://smartemr:smartemr_dev_2026@postgresdb:5432/smartemr
+      AI_BACKEND_URL: http://ai_backend:8000/api/v1
       LIVEKIT_URL: http://livekit:7880
       UPLOAD_DIR: /app/uploads
       OLLAMA_BASE_URL: http://host.docker.internal:11434
     volumes:
-      - server_uploads:/app/uploads
+      - backend_uploads:/app/uploads
     depends_on:
-      postgres:
+      postgresdb:
         condition: service_healthy
-      ai-core:
+      ai_backend:
         condition: service_started
     restart: unless-stopped
     healthcheck:
@@ -79,6 +79,20 @@ services:
       retries: 5
       start_period: 60s
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: /api/v1
+    container_name: frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
 volumes:
   pgdata:
-  server_uploads:
+  backend_uploads:

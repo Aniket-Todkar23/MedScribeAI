@@ -1,5 +1,5 @@
 """
-Smart EMR Backend — FastAPI Application Entry Point
+MedScribe AI Backend — FastAPI Application Entry Point
 """
 
 import logging
@@ -28,7 +28,7 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup/shutdown lifecycle."""
-    logger.info("🚀 Smart EMR Backend starting up...")
+    logger.info("🚀 MedScribe AI Backend starting up...")
 
     # Tables are managed by Alembic migrations (run via `alembic upgrade head`)
     logger.info("✅ Database ready (migrations managed by Alembic)")
@@ -39,12 +39,12 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    logger.info("🛑 Smart EMR Backend shutting down...")
+    logger.info("🛑 MedScribe AI Backend shutting down...")
     await engine.dispose()
 
 
 app = FastAPI(
-    title="Smart EMR & Diagnostic Assistant",
+    title="MedScribe AI — Diagnostic Assistant",
     description=(
         "A voice-first system that transforms clinician-patient interactions "
         "into structured data, diagnoses, and actionable insights."
@@ -92,7 +92,7 @@ app.include_router(drugs.router, prefix=API_PREFIX)
 async def health():
     return {
         "status": "healthy",
-        "service": "smart-emr-backend",
+        "service": "medscribe-ai-backend",
         "version": "2.0.0",
     }
 

@@ -1,5 +1,5 @@
 """
-Smart EMR Backend — Configuration
+MedScribe AI Backend — Configuration
 """
 
 from pathlib import Path
@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     EMAIL_PORT: int = 587
     EMAIL_USER: str = ""
     EMAIL_PASSWORD: str = ""
-    EMAIL_FROM: str = "Smart EMR <noreply@smartemr.local>"
+    EMAIL_FROM: str = "MedScribe AI <noreply@medscribe.local>"
 
     # ── Storage ───────────────────────────────────────────────────────────────
     UPLOAD_DIR: str = "./uploads"

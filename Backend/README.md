@@ -1,6 +1,6 @@
-# Smart EMR — Server Backend
+# MedScribe AI — Server Backend
 
-Primary FastAPI backend for the Smart EMR system. Handles authentication, database CRUD, HIPAA compliance, FHIR R4 export, LiveKit room management, and LangGraph AI agents.
+Primary FastAPI backend for the MedScribe AI system. Handles authentication, database CRUD, HIPAA compliance, FHIR R4 export, PDF report generation, LiveKit room management, and LangGraph AI agents.
 
 ## Tech Stack
 
@@ -11,6 +11,7 @@ Primary FastAPI backend for the Smart EMR system. Handles authentication, databa
 - **AI Agents**: LangGraph 0.2.60 + LangChain 0.3.14
 - **LLMs**: Gemini 2.0 Flash (primary) → Ollama Qwen2.5:7b (fallback) → keyword matching
 - **Video**: LiveKit API for WebRTC room management
+- **PDF**: ReportLab for visit-report & patient-EMR PDF generation
 - **HTTP Client**: httpx (AI backend proxy + Ollama integration)
 
 ## Setup
@@ -24,7 +25,7 @@ venv\Scripts\activate        # Windows
 pip install -r requirements.txt
 ```
 
-Configure `.env`:
+Configure `.env` (see `.env.example`):
 ```env
 DATABASE_URL=postgresql+asyncpg://smartemr:smartemr_dev_2026@localhost:5433/smartemr
 JWT_SECRET=dev-secret-key-change-in-production-2026
@@ -47,14 +48,30 @@ uvicorn app.main:app --host 0.0.0.0 --port 3001 --reload
 
 ```bash
 cd ..  # project root
-docker compose up --build -d server
+docker compose up --build -d backend
 ```
 
-The Docker Compose overrides localhost URLs with service names automatically.
+Docker Compose overrides localhost URLs with Docker service names automatically.
 
-## API Endpoints (58 routes)
+### Seed Data
 
-### Auth (`/auth`)
+```bash
+# Via Docker
+docker exec backend python -m app.seed_data
+
+# Locally
+python -m app.seed_data
+```
+
+Seeds 5 doctors, 10 patients, 10 onboarding records, and 16+ consultations with realistic transcriptions, SOAP notes, ICD codes, and prescriptions.
+
+---
+
+## API Endpoints (69 routes)
+
+All routes are prefixed with `/api/v1`.
+
+### Auth (`/auth`) — 5 routes
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/signup/doctor` | Register doctor account |
@@ -63,9 +80,10 @@ The Docker Compose overrides localhost URLs with service names automatically.
 | POST | `/refresh` | Refresh access token |
 | GET | `/me` | Get current user profile |
 
-### Patients (`/patients`)
+### Patients (`/patients`) — 7 routes
 | Method | Path | Description |
 |--------|------|-------------|
+| GET | `/` | List all patients (doctor only) |
 | GET | `/me` | Get own profile |
 | PUT | `/me` | Update own profile |
 | POST | `/me/onboarding` | Submit medical history onboarding |
@@ -73,7 +91,7 @@ The Docker Compose overrides localhost URLs with service names automatically.
 | GET | `/{patient_id}` | Get patient by ID (doctor only) |
 | GET | `/{patient_id}/onboarding` | Get patient onboarding (doctor only) |
 
-### Doctors (`/doctors`)
+### Doctors (`/doctors`) — 4 routes
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/` | List all doctors (public) |
@@ -81,10 +99,11 @@ The Docker Compose overrides localhost URLs with service names automatically.
 | PUT | `/me` | Update own profile |
 | GET | `/{doctor_id}` | Get doctor by ID |
 
-### Appointments (`/appointments`)
+### Appointments (`/appointments`) — 9 routes
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/` | Book appointment (patient) |
+| POST | `/schedule` | Schedule appointment (doctor) |
 | GET | `/` | List appointments |
 | GET | `/upcoming` | Upcoming appointments |
 | GET | `/{id}` | Get appointment |
@@ -93,7 +112,7 @@ The Docker Compose overrides localhost URLs with service names automatically.
 | PUT | `/{id}` | Update appointment |
 | DELETE | `/{id}` | Cancel appointment |
 
-### Consultations (`/consultations`)
+### Consultations (`/consultations`) — 5 routes
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/` | Create consultation (doctor) |
@@ -102,24 +121,27 @@ The Docker Compose overrides localhost URLs with service names automatically.
 | GET | `/patient/{patient_id}` | List patient consultations |
 | POST | `/{id}/process-audio` | Upload audio → transcribe → extract → EMR |
 
-### Documents (`/documents`)
+### Documents (`/documents`) — 6 routes
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/upload` | Upload document for AI analysis |
 | GET | `/{id}` | Get document metadata |
+| GET | `/{id}/analysis-status` | Check analysis status |
 | GET | `/patient/{patient_id}` | List patient documents |
 | GET | `/{id}/patient-view` | AI-generated patient-friendly view |
 | GET | `/{id}/clinician-view` | AI-generated clinician view |
 
-### Meetings (`/meetings`)
+### Meetings (`/meetings`) — 6 routes
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/{appointment_id}/create-room` | Create LiveKit room |
 | GET | `/{appointment_id}/join-token` | Get join token |
 | GET | `/{appointment_id}/status` | Room status |
 | POST | `/{appointment_id}/end` | End meeting |
+| POST | `/{appointment_id}/leave` | Leave meeting |
+| POST | `/transcribe-turn` | Transcribe a meeting turn |
 
-### AI Agents (`/agent`)
+### AI Agents (`/agent`) — 5 routes
 | Method | Path | Description |
 |--------|------|-------------|
 | POST | `/patient/chat` | Patient health assistant |
@@ -128,7 +150,7 @@ The Docker Compose overrides localhost URLs with service names automatically.
 | GET | `/history/{session_id}` | Get chat history |
 | DELETE | `/history/{session_id}` | Clear chat history |
 
-### AI Proxy (`/ai`)
+### AI Proxy (`/ai`) — 11 routes
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/health` | AI Core health check |
@@ -143,27 +165,46 @@ The Docker Compose overrides localhost URLs with service names automatically.
 | POST | `/doc/clinician-report` | Proxy: clinician report |
 | POST | `/chat` | Proxy: AI chat completion |
 
-### FHIR R4 (`/fhir`)
+### FHIR R4 (`/fhir`) — 8 routes
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | `/Patient/{id}` | FHIR Patient resource |
 | GET | `/Encounter/{id}` | FHIR Encounter resource |
 | GET | `/Condition/{id}` | FHIR Condition resources |
 | GET | `/MedicationRequest/{id}` | FHIR MedicationRequest resources |
+| GET | `/Bundle/consultation/{id}` | FHIR Bundle for a consultation |
+| GET | `/Bundle/consultation/{id}/download` | Download FHIR Bundle as JSON file |
+| GET | `/export/visit-report/{id}` | **PDF visit report** (single consultation) |
+| GET | `/export/patient-emr` | **PDF patient EMR** (all consultations) |
+
+### Drugs (`/drugs`) — 2 routes
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/search` | Search drug names |
+| GET | `/options` | Get prescription options |
+
+### Health — 1 route
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/health` | Server health check |
+
+---
 
 ## Database (9 Tables)
 
-| Model | Table | Fields |
-|-------|-------|--------|
+| Model | Table | Key Fields |
+|-------|-------|------------|
 | `Doctor` | `doctors` | name, email, specialization, license_number, phone |
 | `Patient` | `patients` | name, email, dob, gender, blood_group, phone |
 | `PatientOnboarding` | `patient_onboarding` | conditions, medications, allergies, smoking, alcohol, surgeries |
 | `Appointment` | `appointments` | patient_id, doctor_id, datetime, status, type, reason |
-| `Consultation` | `consultations` | appointment_id, soap_notes, icd_codes, prescriptions, transcript, emr_data |
-| `Document` | `documents` | patient_id, filename, type, analysis_result, status |
+| `Consultation` | `consultations` | appointment_id, soap_notes, icd_codes, prescriptions, transcript, extraction_data (JSONB), emr_data (JSONB) |
+| `Document` | `documents` | patient_id, filename, type, analysis_result (JSONB), status |
 | `ChatHistory` | `chat_history` | user_id, session_id, role, content |
 | `AuditLog` | `audit_log` | user_id, action, resource, details, ip_address |
 | `NotificationLog` | `notification_log` | user_id, type, subject, status |
+
+---
 
 ## LangGraph Agents
 
@@ -179,7 +220,7 @@ Ollama Qwen2.5:7b (local, via httpx)
 Keyword-based tool dispatch (deterministic)
 ```
 
-**Circuit-breaker**: On first Gemini 429 error, Gemini is disabled for 5 minutes. All subsequent requests go directly to Ollama without hitting the Gemini API, avoiding wasted quota attempts.
+**Circuit-breaker**: On first Gemini 429 error, Gemini is disabled for 5 minutes. All subsequent requests go directly to Ollama without hitting the Gemini API.
 
 ### Patient Agent (`patient_agent.py`)
 5 tools: `get_my_health_summary`, `get_my_appointments`, `get_my_prescriptions`, `get_my_documents`, `explain_medical_term`
@@ -189,6 +230,8 @@ Keyword-based tool dispatch (deterministic)
 
 ### Ollama Agent (`ollama_agent.py`)
 Lightweight agentic loop using raw httpx calls to Ollama's `/api/chat` API. Supports tool-calling with up to 5 rounds. Zero extra pip dependencies — uses the existing httpx package.
+
+---
 
 ## Testing
 
@@ -202,6 +245,10 @@ python test_agents.py
 
 Test coverage: health checks, auth, patients, doctors, appointments, consultations, documents, meetings, AI agents, AI proxy (11 endpoints), FHIR R4, access control, cleanup.
 
+A Postman collection (`MedScribe_AI_Postman_Collection.json` in the project root) is also included for manual API testing.
+
+---
+
 ## Project Layout
 
 ```
@@ -209,29 +256,33 @@ Backend/
 ├── Dockerfile
 ├── requirements.txt
 ├── alembic.ini
-├── alembic/              # DB migrations
-├── test_backend.py       # 69-test suite
-├── test_agents.py        # Agent endpoint tester
+├── .env.example
+├── alembic/                # DB migrations
+├── test_backend.py         # 69-test suite
+├── test_agents.py          # Agent endpoint tester
+├── MedScribe_AI_Postman_Collection.json  # (in project root)
 └── app/
-    ├── main.py           # FastAPI app factory
-    ├── config.py          # Pydantic settings
-    ├── database.py        # Async SQLAlchemy engine
-    ├── api/               # 10 route modules
+    ├── main.py             # FastAPI app factory + lifespan
+    ├── config.py           # Pydantic settings
+    ├── database.py         # Async SQLAlchemy engine
+    ├── seed_data.py        # Seed data (5 doctors, 10 patients, 16+ consults)
+    ├── api/                # 11 route modules (69 endpoints)
     │   ├── auth.py, patients.py, doctors.py
     │   ├── appointments.py, consultations.py
     │   ├── documents.py, meetings.py
     │   ├── agent.py, ai_proxy.py, fhir.py
-    │   └── deps.py        # Dependency injection
-    ├── models/            # 9 SQLAlchemy models
-    ├── schemas/           # Pydantic request/response schemas
-    ├── services/          # AI service HTTP client, meeting service
-    ├── agents/            # LangGraph agent system
-    │   ├── patient_agent.py    # Patient health assistant
-    │   ├── clinician_agent.py  # Clinical AI assistant
-    │   ├── ollama_agent.py     # Local Ollama fallback
-    │   ├── prompts.py          # System prompts
-    │   └── tools.py            # DB-backed tool functions
-    ├── compliance/        # HIPAA compliance modules
+    │   ├── drugs.py
+    │   └── deps.py         # Dependency injection (require_doctor, require_patient)
+    ├── models/             # 9 SQLAlchemy models
+    ├── schemas/            # Pydantic request/response schemas
+    ├── services/           # AI service HTTP client, meeting service
+    ├── agents/             # LangGraph agent system
+    │   ├── patient_agent.py     # Patient health assistant
+    │   ├── clinician_agent.py   # Clinical AI assistant
+    │   ├── ollama_agent.py      # Local Ollama fallback
+    │   ├── prompts.py           # System prompts
+    │   └── tools.py             # DB-backed tool functions
+    ├── compliance/         # HIPAA compliance modules
     │   ├── audit_middleware.py
     │   └── pii_masker.py
     └── utils/

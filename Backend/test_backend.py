@@ -1,5 +1,5 @@
 """
-Smart EMR Backend — Comprehensive Test Script
+MedScribe AI Backend — Comprehensive Test Script
 ================================================
 Tests ALL backend endpoints including AI core service proxied routes.
 
@@ -38,8 +38,8 @@ API = f"{BASE_URL}/api/v1"
 TIMEOUT = httpx.Timeout(300.0, connect=30.0)  # generous for AI calls (Modal cold start)
 
 # Test user credentials
-DOCTOR_EMAIL = f"testdoc_{uuid4().hex[:6]}@smartemr.dev"
-PATIENT_EMAIL = f"testpat_{uuid4().hex[:6]}@smartemr.dev"
+DOCTOR_EMAIL = f"testdoc_{uuid4().hex[:6]}@medscribe.dev"
+PATIENT_EMAIL = f"testpat_{uuid4().hex[:6]}@medscribe.dev"
 PASSWORD = "test1234"
 
 # ── State ─────────────────────────────────────────────────────────────────────
@@ -248,7 +248,7 @@ async def run_all_tests():
             "password": PASSWORD,
             "specialization": "Internal Medicine",
             "license_number": f"TEST-{uuid4().hex[:6]}",
-            "hospital_name": "Smart EMR Test Hospital",
+            "hospital_name": "MedScribe AI Test Hospital",
             "phone": "+911234567890",
         })
         check("Signup doctor", r, 201, save_keys={
@@ -346,6 +346,9 @@ async def run_all_tests():
         r = await c.get(f"{API}/patients/{state['patient_id']}/onboarding", headers=doctor_headers())
         check("Get patient onboarding (doctor)", r)
 
+        r = await c.get(f"{API}/patients", headers=doctor_headers())
+        check("List all patients (doctor)", r)
+
         # ── 3. Doctors ───────────────────────────────────────────────────
         print(f"\n{cyan('━' * 60)}")
         print(cyan("  3. DOCTORS"))
@@ -359,7 +362,7 @@ async def run_all_tests():
 
         r = await c.put(f"{API}/doctors/me", headers=doctor_headers(), json={
             "specialization": "Cardiology",
-            "hospital_name": "SmartEMR Central Hospital",
+            "hospital_name": "MedScribe Central Hospital",
         })
         check("Update doctor profile", r)
 
@@ -383,6 +386,17 @@ async def run_all_tests():
         check("Book appointment (patient)", r, 201, save_keys={
             "appointment_id": "appointment_id",
         })
+
+        # Doctor schedules appointment for patient
+        appt_date_doc = (datetime.now(timezone.utc) + timedelta(days=10)).isoformat()
+        r = await c.post(f"{API}/appointments/schedule", headers=doctor_headers(), json={
+            "patient_id": state["patient_id"],
+            "appointment_date": appt_date_doc,
+            "appointment_type": "in_person",
+            "reason": "Follow-up consultation scheduled by doctor",
+            "duration_minutes": 20,
+        })
+        check("Schedule appointment (doctor)", r, 201)
 
         r = await c.get(f"{API}/appointments", headers=patient_headers())
         check("List appointments (patient)", r)
@@ -479,6 +493,9 @@ async def run_all_tests():
                 r = await c.get(f"{API}/documents/{state['document_id']}", headers=patient_headers())
                 check("Get document by ID", r)
 
+                r = await c.get(f"{API}/documents/{state['document_id']}/analysis-status", headers=patient_headers())
+                check("Get document analysis status", r)
+
                 r = await c.get(f"{API}/documents/{state['document_id']}/patient-view", headers=patient_headers())
                 check("Get document patient-view", r)
 
@@ -508,8 +525,18 @@ async def run_all_tests():
             r = await c.get(f"{API}/meetings/{state['appointment_id']}/status", headers=doctor_headers())
             check("Get meeting status", r)
 
+            r = await c.post(f"{API}/meetings/{state['appointment_id']}/leave", headers=patient_headers())
+            check("Leave meeting (patient)", r)
+
             r = await c.post(f"{API}/meetings/{state['appointment_id']}/end", headers=doctor_headers())
             check("End meeting", r)
+
+            r = await c.post(f"{API}/meetings/transcribe-turn", headers=doctor_headers(), json={
+                "appointment_id": state["appointment_id"],
+                "speaker": "doctor",
+                "text": "Patient reports recurring headaches for three days with mild fever.",
+            })
+            check("Transcribe meeting turn", r)
         else:
             skip_test("Meetings", "No appointment_id")
 
@@ -677,12 +704,38 @@ async def run_all_tests():
 
             r = await c.get(f"{API}/fhir/MedicationRequest/{state['consultation_id']}", headers=doctor_headers())
             check("FHIR MedicationRequest", r)
-        else:
-            skip_test("FHIR Encounter/Condition/MedicationRequest", "No consultation_id")
 
-        # ── 11. Access Control Checks ────────────────────────────────────
+            r = await c.get(f"{API}/fhir/Bundle/consultation/{state['consultation_id']}", headers=doctor_headers())
+            check("FHIR Bundle (full consultation)", r, print_body=True)
+
+            r = await c.get(f"{API}/fhir/Bundle/consultation/{state['consultation_id']}/download", headers=doctor_headers())
+            check("FHIR Bundle download (JSON file)", r)
+
+            r = await c.get(f"{API}/fhir/export/visit-report/{state['consultation_id']}", headers=doctor_headers())
+            check("FHIR Export: Visit Report PDF", r)
+
+        else:
+            skip_test("FHIR Encounter/Condition/MedicationRequest/Bundle", "No consultation_id")
+
+        # FHIR Patient EMR PDF (patient-token)
+        if state["patient_id"]:
+            r = await c.get(f"{API}/fhir/export/patient-emr", headers=patient_headers())
+            check("FHIR Export: Patient EMR PDF", r)
+
+        # ── 11. Drugs ─────────────────────────────────────────────────
         print(f"\n{cyan('━' * 60)}")
-        print(cyan("  11. ACCESS CONTROL / AUTHORIZATION"))
+        print(cyan("  11. DRUGS"))
+        print(f"{cyan('━' * 60)}")
+
+        r = await c.get(f"{API}/drugs/search", headers=doctor_headers(), params={"q": "paracetamol"})
+        check("Drug search (paracetamol)", r, print_body=True)
+
+        r = await c.get(f"{API}/drugs/options", headers=doctor_headers())
+        check("Drug options (dose/frequency/duration)", r, print_body=True)
+
+        # ── 12. Access Control Checks ────────────────────────────────────
+        print(f"\n{cyan('━' * 60)}")
+        print(cyan("  12. ACCESS CONTROL / AUTHORIZATION"))
         print(f"{cyan('━' * 60)}")
 
         # Patient should NOT access doctor-only routes
@@ -703,9 +756,9 @@ async def run_all_tests():
         r = await c.get(f"{API}/patients/me", headers=doctor_headers())
         check("Doctor blocked from patient /me route", r, expected_status=403)
 
-        # ── 12. Cleanup — Cancel Appointment ─────────────────────────────
+        # ── 13. Cleanup — Cancel Appointment ─────────────────────────
         print(f"\n{cyan('━' * 60)}")
-        print(cyan("  12. CLEANUP"))
+        print(cyan("  13. CLEANUP"))
         print(f"{cyan('━' * 60)}")
 
         # Book a second appointment just to test cancel
@@ -759,7 +812,7 @@ async def run_all_tests():
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("  Smart EMR — Comprehensive Backend Test Suite")
+    print("  MedScribe AI — Comprehensive Backend Test Suite")
     print(f"  Server:  {BASE_URL}")
     print(f"  AI Core: {AI_CORE_URL}")
     print(f"  Time:    {datetime.now().isoformat()}")
