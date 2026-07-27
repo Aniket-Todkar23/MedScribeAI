@@ -11,9 +11,13 @@
   },
   "dependencies": {
     "@livekit/components-react": "^2.9.20",
+    "@radix-ui/react-slot": "^1.3.3",
+    "@tabler/icons-react": "^3.45.0",
     "@tanstack/react-query": "^5.90.21",
     "axios": "^1.13.6",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cobe": "^2.0.1",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.34.3",
     "livekit-client": "^2.17.2",
@@ -22,6 +26,7 @@
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.13.1",
+    "react-use-measure": "^2.1.7",
     "tailwind-merge": "^3.5.0",
     "zustand": "^5.0.11"
   },

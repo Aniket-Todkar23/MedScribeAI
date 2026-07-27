@@ -6,8 +6,11 @@ import { authApi } from '../lib/api';
 import {
   Stethoscope, UserRound, ArrowRight, ShieldCheck, Activity,
   FileText, Bot, Mail, Lock, User, Phone, Building, Hash, Eye, EyeOff,
-  AlertCircle, Loader2, ArrowLeft, Droplets, Heart,
+  AlertCircle, Loader2, ArrowLeft, Droplets, Heart, X
 } from 'lucide-react';
+import { HeroSection } from '../components/blocks/hero-section-5';
+import FeaturesSectionDemo from '../components/ui/features-section-demo-3';
+import rheumatologyGif from '../assets/Rheumatology.gif';
 
 type View = 'landing' | 'login' | 'signup-patient' | 'signup-doctor';
 
@@ -18,6 +21,13 @@ export default function Home() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [gifKey, setGifKey] = useState(Date.now());
+
+  useEffect(() => {
+    if (view !== 'landing') {
+      setGifKey(Date.now());
+    }
+  }, [view]);
 
   // Login form
   const [loginEmail, setLoginEmail] = useState('');
@@ -41,27 +51,21 @@ export default function Home() {
   const [dLicense, setDLicense] = useState('');
   const [dHospital, setDHospital] = useState('');
 
-  // Redirect if already logged in
   useEffect(() => {
     if (isAuthenticated && user) {
-      const dest = user.user_type === 'patient' ? '/patient' : '/doctor';
-      navigate(dest, { replace: true });
+      navigate(user.role === 'doctor' ? '/doctor-dashboard' : '/patient-dashboard');
     }
   }, [isAuthenticated, user, navigate]);
-
-  if (isAuthenticated && user) return null;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      const res = await authApi.login({ email: loginEmail, password: loginPassword });
-      const { access_token, refresh_token, user: u } = res.data;
-      setAuth(u, access_token, refresh_token);
-      navigate(u.user_type === 'patient' ? '/patient' : '/doctor');
+      const { user, token } = await authApi.login(loginEmail, loginPassword);
+      setAuth(token, user);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Invalid credentials');
+      setError(err.response?.data?.error || 'Invalid credentials. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -72,16 +76,13 @@ export default function Home() {
     setError('');
     setLoading(true);
     try {
-      const res = await authApi.signupPatient({
-        full_name: pName, email: pEmail, password: pPassword,
-        phone: pPhone || undefined, date_of_birth: pDob || undefined,
-        gender: pGender || undefined, blood_group: pBlood || undefined,
+      const { user, token } = await authApi.registerPatient({
+        name: pName, email: pEmail, password: pPassword,
+        phone: pPhone, date_of_birth: pDob, gender: pGender, blood_group: pBlood
       });
-      const { access_token, refresh_token, user: u } = res.data;
-      setAuth(u, access_token, refresh_token);
-      navigate('/patient');
+      setAuth(token, user);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Signup failed');
+      setError(err.response?.data?.error || 'Registration failed. Email might be in use.');
     } finally {
       setLoading(false);
     }
@@ -92,235 +93,163 @@ export default function Home() {
     setError('');
     setLoading(true);
     try {
-      const res = await authApi.signupDoctor({
-        full_name: dName, email: dEmail, password: dPassword,
-        phone: dPhone || undefined, specialization: dSpecialization || undefined,
-        license_number: dLicense, hospital_name: dHospital || undefined,
+      const { user, token } = await authApi.registerDoctor({
+        name: dName, email: dEmail, password: dPassword,
+        phone: dPhone, specialization: dSpecialization,
+        license_number: dLicense, hospital_affiliation: dHospital
       });
-      const { access_token, refresh_token, user: u } = res.data;
-      setAuth(u, access_token, refresh_token);
-      navigate('/doctor');
+      setAuth(token, user);
     } catch (err: any) {
-      setError(err.response?.data?.detail || 'Signup failed');
+      setError(err.response?.data?.error || 'Registration failed. Email might be in use.');
     } finally {
       setLoading(false);
     }
   };
 
-  const inputCls = "w-full px-4 py-3 bg-muted border border-border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all placeholder:text-muted-foreground/60";
-  const btnPrimary = "w-full py-3 bg-primary text-primary-foreground rounded-xl font-semibold hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 disabled:opacity-50 flex items-center justify-center gap-2";
+  const inputCls = "w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-white/30 focus:bg-white/10 transition-colors placeholder:text-zinc-500";
+  const btnAuth = "w-full py-3 mt-6 bg-white hover:bg-zinc-200 text-black rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center justify-center";
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden flex flex-col items-center justify-center">
-      {/* Background blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] animate-pulse" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] animate-pulse delay-1000" />
+    <div className="min-h-screen bg-background relative overflow-hidden flex flex-col items-center w-full">
+      {/* Background blobs for aesthetics */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/10 rounded-full blur-[120px] animate-pulse pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500/10 rounded-full blur-[120px] animate-pulse delay-1000 pointer-events-none" />
 
-      <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center min-h-[calc(100vh-4rem)]">
-        <AnimatePresence mode="wait">
-          {/* ── Landing ── */}
-          {view === 'landing' && (
-            <motion.div key="landing" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="text-center w-full">
-              <motion.div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 text-primary font-medium text-sm mb-8 border border-primary/20">
-                <ShieldCheck className="w-4 h-4" /> HIPAA Compliant AI Platform
-              </motion.div>
-
-              <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 max-w-4xl mx-auto">
-                The Future of <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-600">Smart EMR</span> & Telehealth
-              </h1>
-
-              <p className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed">
-                A voice-first system that transforms clinician-patient interactions into structured data, diagnoses, and actionable insights.
-              </p>
-
-              {/* Login + signup cards */}
-              <div className="flex flex-col sm:flex-row gap-6 w-full max-w-3xl mx-auto justify-center items-stretch mb-6">
-                <div onClick={() => setView('login')} className="group relative flex-1 p-8 rounded-3xl glass cursor-pointer hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 text-left">
-                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                    <Lock className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">Sign In</h3>
-                  <p className="text-muted-foreground text-sm mb-6">Access your account as a patient or clinician.</p>
-                  <div className="flex items-center text-sm font-semibold tracking-wide text-primary">
-                    Login <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-
-                <div onClick={() => setView('signup-patient')} className="group relative flex-1 p-8 rounded-3xl glass cursor-pointer hover:border-blue-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-1 text-left">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                    <UserRound className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">New Patient</h3>
-                  <p className="text-muted-foreground text-sm mb-6">Register as a patient to access your records and AI health assistant.</p>
-                  <div className="flex items-center text-sm font-semibold tracking-wide text-blue-600 dark:text-blue-400">
-                    Sign Up <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-
-                <div onClick={() => setView('signup-doctor')} className="group relative flex-1 p-8 rounded-3xl glass cursor-pointer hover:border-primary/50 transition-all duration-300 hover:shadow-2xl hover:shadow-primary/10 hover:-translate-y-1 text-left">
-                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                    <Stethoscope className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">New Clinician</h3>
-                  <p className="text-muted-foreground text-sm mb-6">Join as a doctor to manage patients, EMRs, and telehealth consultations.</p>
-                  <div className="flex items-center text-sm font-semibold tracking-wide text-primary">
-                    Sign Up <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Feature icons */}
-              <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-8 opacity-60 text-sm font-medium">
-                <div className="flex flex-col items-center gap-2"><Activity className="w-5 h-5" /> Live Transcriptions</div>
-                <div className="flex flex-col items-center gap-2"><FileText className="w-5 h-5" /> AI Document Analysis</div>
-                <div className="flex flex-col items-center gap-2"><ShieldCheck className="w-5 h-5" /> Secure Data Storage</div>
-                <div className="flex flex-col items-center gap-2"><Bot className="w-5 h-5" /> LangGraph Agents</div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── Login ── */}
-          {view === 'login' && (
-            <motion.div key="login" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="w-full max-w-md mx-auto">
-              <button onClick={() => { setView('landing'); setError(''); }} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
-                <ArrowLeft className="w-4 h-4" /> Back
-              </button>
-              <div className="glass rounded-3xl p-8 shadow-xl">
-                <div className="text-center mb-8">
-                  <div className="w-14 h-14 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
-                    <Lock className="w-7 h-7 text-primary" />
-                  </div>
-                  <h2 className="text-2xl font-bold">Welcome Back</h2>
-                  <p className="text-sm text-muted-foreground mt-1">Sign in to Smart EMR</p>
-                </div>
-
-                {error && (
-                  <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0" /> {error}
-                  </div>
-                )}
-
-                <form onSubmit={handleLogin} className="space-y-4">
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <input type="email" placeholder="Email address" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required className={inputCls + ' pl-10'} />
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <input type={showPassword ? 'text' : 'password'} placeholder="Password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required className={inputCls + ' pl-10 pr-10'} />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
-                  <button type="submit" disabled={loading} className={btnPrimary}>
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Sign In'}
-                  </button>
-                </form>
-
-                <div className="mt-6 pt-4 border-t border-border text-center text-sm text-muted-foreground">
-                  <p className="mb-2">Demo Credentials:</p>
-                  <p className="font-mono text-xs">sarah.jenkins@email.com / password123</p>
-                  <p className="font-mono text-xs">robert.chen@smartemr.local / password123</p>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── Patient Signup ── */}
-          {view === 'signup-patient' && (
-            <motion.div key="signup-patient" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="w-full max-w-md mx-auto">
-              <button onClick={() => { setView('landing'); setError(''); }} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
-                <ArrowLeft className="w-4 h-4" /> Back
-              </button>
-              <div className="glass rounded-3xl p-8 shadow-xl">
-                <div className="text-center mb-8">
-                  <div className="w-14 h-14 mx-auto bg-blue-500/10 rounded-2xl flex items-center justify-center mb-4">
-                    <UserRound className="w-7 h-7 text-blue-600" />
-                  </div>
-                  <h2 className="text-2xl font-bold">Patient Registration</h2>
-                </div>
-
-                {error && (
-                  <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0" /> {error}
-                  </div>
-                )}
-
-                <form onSubmit={handlePatientSignup} className="space-y-3">
-                  <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><input placeholder="Full Name *" value={pName} onChange={(e) => setPName(e.target.value)} required className={inputCls + ' pl-10'} /></div>
-                  <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><input type="email" placeholder="Email *" value={pEmail} onChange={(e) => setPEmail(e.target.value)} required className={inputCls + ' pl-10'} /></div>
-                  <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><input type="password" placeholder="Password *" value={pPassword} onChange={(e) => setPPassword(e.target.value)} required minLength={6} className={inputCls + ' pl-10'} /></div>
-                  <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><input placeholder="Phone" value={pPhone} onChange={(e) => setPPhone(e.target.value)} className={inputCls + ' pl-10'} /></div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <input type="date" placeholder="Date of Birth" value={pDob} onChange={(e) => setPDob(e.target.value)} className={inputCls} />
-                    <select value={pGender} onChange={(e) => setPGender(e.target.value)} className={inputCls}>
-                      <option value="">Gender</option>
-                      <option value="male">Male</option>
-                      <option value="female">Female</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  <div className="relative"><Droplets className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                    <select value={pBlood} onChange={(e) => setPBlood(e.target.value)} className={inputCls + ' pl-10'}>
-                      <option value="">Blood Group</option>
-                      {['A+','A-','B+','B-','AB+','AB-','O+','O-'].map(bg => <option key={bg} value={bg}>{bg}</option>)}
-                    </select>
-                  </div>
-                  <button type="submit" disabled={loading} className={btnPrimary}>
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Account'}
-                  </button>
-                </form>
-
-                <p className="text-center text-sm text-muted-foreground mt-4">
-                  Already have an account?{' '}
-                  <button onClick={() => { setView('login'); setError(''); }} className="text-primary font-medium hover:underline">Sign In</button>
-                </p>
-              </div>
-            </motion.div>
-          )}
-
-          {/* ── Doctor Signup ── */}
-          {view === 'signup-doctor' && (
-            <motion.div key="signup-doctor" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="w-full max-w-md mx-auto">
-              <button onClick={() => { setView('landing'); setError(''); }} className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground mb-6 transition-colors">
-                <ArrowLeft className="w-4 h-4" /> Back
-              </button>
-              <div className="glass rounded-3xl p-8 shadow-xl">
-                <div className="text-center mb-8">
-                  <div className="w-14 h-14 mx-auto bg-primary/10 rounded-2xl flex items-center justify-center mb-4">
-                    <Stethoscope className="w-7 h-7 text-primary" />
-                  </div>
-                  <h2 className="text-2xl font-bold">Clinician Registration</h2>
-                </div>
-
-                {error && (
-                  <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm flex items-center gap-2">
-                    <AlertCircle className="w-4 h-4 shrink-0" /> {error}
-                  </div>
-                )}
-
-                <form onSubmit={handleDoctorSignup} className="space-y-3">
-                  <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><input placeholder="Full Name *" value={dName} onChange={(e) => setDName(e.target.value)} required className={inputCls + ' pl-10'} /></div>
-                  <div className="relative"><Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><input type="email" placeholder="Email *" value={dEmail} onChange={(e) => setDEmail(e.target.value)} required className={inputCls + ' pl-10'} /></div>
-                  <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><input type="password" placeholder="Password *" value={dPassword} onChange={(e) => setDPassword(e.target.value)} required minLength={6} className={inputCls + ' pl-10'} /></div>
-                  <div className="relative"><Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><input placeholder="Phone" value={dPhone} onChange={(e) => setDPhone(e.target.value)} className={inputCls + ' pl-10'} /></div>
-                  <div className="relative"><Heart className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><input placeholder="Specialization" value={dSpecialization} onChange={(e) => setDSpecialization(e.target.value)} className={inputCls + ' pl-10'} /></div>
-                  <div className="relative"><Hash className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><input placeholder="License Number *" value={dLicense} onChange={(e) => setDLicense(e.target.value)} required className={inputCls + ' pl-10'} /></div>
-                  <div className="relative"><Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><input placeholder="Hospital Name" value={dHospital} onChange={(e) => setDHospital(e.target.value)} className={inputCls + ' pl-10'} /></div>
-                  <button type="submit" disabled={loading} className={btnPrimary}>
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Create Account'}
-                  </button>
-                </form>
-
-                <p className="text-center text-sm text-muted-foreground mt-4">
-                  Already have an account?{' '}
-                  <button onClick={() => { setView('login'); setError(''); }} className="text-primary font-medium hover:underline">Sign In</button>
-                </p>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+      {/* ── Always Display Landing ── */}
+      <div className="w-full min-h-screen z-10 bg-background overflow-x-hidden relative">
+        <HeroSection setView={setView} />
+        <FeaturesSectionDemo />
+        <div id="doctors" className="w-full min-h-[50vh] bg-background flex flex-col items-center justify-center border-t border-border/10">
+            <h2 className="text-3xl font-bold text-muted-foreground/30">How to use for Doctors (Coming Soon)</h2>
+        </div>
+        <div id="patients" className="w-full min-h-[50vh] bg-muted/30 flex flex-col items-center justify-center border-t border-border/10">
+            <h2 className="text-3xl font-bold text-muted-foreground/30">How to use for Patients (Coming Soon)</h2>
+        </div>
       </div>
+
+      {/* ── Modals Layer ── */}
+      <AnimatePresence>
+        {view !== 'landing' && (
+          <motion.div 
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 sm:p-6"
+          >
+            <motion.div 
+              initial={{ y: 50, scale: 0.95 }} animate={{ y: 0, scale: 1 }} exit={{ y: 20, scale: 0.95 }}
+              className="w-full max-w-[900px] bg-[#0a0a0a] rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-[0_0_50px_rgba(0,0,0,0.5)] border border-white/10 relative"
+            >
+              {/* Left Image Section */}
+              <div className="hidden md:block w-1/2 relative bg-zinc-900 overflow-hidden">
+                 <img src={`${rheumatologyGif}?t=${gifKey}`} className="absolute inset-0 w-full h-full object-cover" alt="Medical Animation" key={gifKey} />
+                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/50 via-transparent to-transparent" />
+                 <div className="absolute inset-0 bg-gradient-to-r from-transparent to-[#0a0a0a]/50" />
+              </div>
+
+              {/* Right Forms Section */}
+              <div className="w-full md:w-1/2 p-8 lg:p-12 relative flex flex-col justify-center min-h-[500px] max-h-[90vh] overflow-y-auto custom-scrollbar">
+                 <button onClick={() => { setView('landing'); setError(''); }} className="absolute top-6 right-6 p-2 rounded-full bg-white/5 hover:bg-white/10 text-white transition-colors z-10">
+                    <X className="w-5 h-5" />
+                 </button>
+
+                 {/* LOGIN VIEW */}
+                 {view === 'login' && (
+                    <div className="w-full max-w-sm mx-auto relative z-10">
+                        <div className="text-center mb-8">
+                            <h2 className="text-3xl font-bold text-white mb-2">Sign in</h2>
+                            <p className="text-sm text-zinc-400">Welcome back! Please sign in to continue</p>
+                        </div>
+                        
+                        <button className="w-full py-2.5 px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-full flex items-center justify-center gap-3 text-white text-sm font-medium transition-colors mb-6">
+                            <svg className="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                            Google
+                        </button>
+
+                        <div className="relative flex items-center mb-6">
+                            <div className="flex-grow border-t border-white/10"></div>
+                            <span className="flex-shrink-0 mx-4 text-xs text-zinc-500 uppercase tracking-widest">or sign in with email</span>
+                            <div className="flex-grow border-t border-white/10"></div>
+                        </div>
+
+                        {error && <div className="mb-4 text-red-400 text-sm text-center">{error}</div>}
+
+                        <form onSubmit={handleLogin} className="space-y-4">
+                            <div className="relative">
+                                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                <input type="email" placeholder="Email id" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} required className={inputCls} />
+                            </div>
+                            <div className="relative">
+                                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
+                                <input type={showPassword ? 'text' : 'password'} placeholder="Password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} required className={inputCls} />
+                                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
+                                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                            </div>
+                            <div className="flex items-center justify-between mt-2 px-1">
+                                <label className="flex items-center gap-2 text-xs text-zinc-400 cursor-pointer">
+                                    <input type="checkbox" className="rounded bg-white/10 border-transparent text-white focus:ring-0 w-3 h-3" />
+                                    Remember me
+                                </label>
+                                <a href="#" className="text-xs text-zinc-400 hover:text-zinc-200 decoration-zinc-500 underline underline-offset-4">Forgot password?</a>
+                            </div>
+                            <button type="submit" disabled={loading} className={btnAuth}>
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin text-black" /> : 'Login'}
+                            </button>
+                        </form>
+                        <p className="text-center text-sm text-zinc-400 mt-8">
+                            Don't have an account? <span className="text-white hover:text-zinc-200 cursor-pointer font-medium" onClick={() => setView('signup-patient')}>Sign up</span>
+                        </p>
+                    </div>
+                 )}
+
+                 {/* PATIENT SIGNUP VIEW */}
+                 {view === 'signup-patient' && (
+                    <div className="w-full max-w-sm mx-auto relative z-10 p-1">
+                        <div className="text-center mb-8">
+                            <h2 className="text-3xl font-bold text-white mb-2">Patient Sign up</h2>
+                            <p className="text-sm text-zinc-400">Join Smart EMR as a patient</p>
+                        </div>
+                        {error && <div className="mb-4 text-red-400 text-sm text-center">{error}</div>}
+                        <form onSubmit={handlePatientSignup} className="space-y-4">
+                            <div className="relative"><User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" /><input placeholder="Full Name *" value={pName} onChange={(e) => setPName(e.target.value)} required className={inputCls} /></div>
+                            <div className="relative"><Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" /><input type="email" placeholder="Email id *" value={pEmail} onChange={(e) => setPEmail(e.target.value)} required className={inputCls} /></div>
+                            <div className="relative"><Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" /><input type="password" placeholder="Password *" value={pPassword} onChange={(e) => setPPassword(e.target.value)} required minLength={6} className={inputCls} /></div>
+                            <button type="submit" disabled={loading} className={btnAuth}>
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin text-black" /> : 'Register'}
+                            </button>
+                        </form>
+                        <p className="text-center text-sm text-zinc-400 mt-8">
+                            Already have an account? <span onClick={() => setView('login')} className="text-white hover:text-zinc-300 font-medium cursor-pointer">Log in</span>
+                        </p>
+                    </div>
+                 )}
+
+                 {/* DOCTOR SIGNUP VIEW */}
+                 {view === 'signup-doctor' && (
+                    <div className="w-full max-w-sm mx-auto relative z-10 p-1">
+                        <div className="text-center mb-6">
+                            <h2 className="text-3xl font-bold text-white mb-2">Doctor Sign up</h2>
+                            <p className="text-sm text-zinc-400">Join Smart EMR as a clinician</p>
+                        </div>
+                        {error && <div className="mb-4 text-red-400 text-sm text-center">{error}</div>}
+                        <form onSubmit={handleDoctorSignup} className="space-y-4">
+                            <div className="relative"><User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" /><input placeholder="Full Name *" value={dName} onChange={(e) => setDName(e.target.value)} required className={inputCls} /></div>
+                            <div className="relative"><Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" /><input type="email" placeholder="Email id *" value={dEmail} onChange={(e) => setDEmail(e.target.value)} required className={inputCls} /></div>
+                            <div className="relative"><Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" /><input type="password" placeholder="Password *" value={dPassword} onChange={(e) => setDPassword(e.target.value)} required minLength={6} className={inputCls} /></div>
+                            <div className="relative"><Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" /><input placeholder="License Number *" value={dLicense} onChange={(e) => setDLicense(e.target.value)} required className={inputCls} /></div>
+                            <button type="submit" disabled={loading} className={btnAuth}>
+                                {loading ? <Loader2 className="w-4 h-4 animate-spin text-black" /> : 'Register'}
+                            </button>
+                        </form>
+                        <p className="text-center text-sm text-zinc-400 mt-8">
+                            Already have an account? <span onClick={() => setView('login')} className="text-white hover:text-zinc-300 font-medium cursor-pointer">Log in</span>
+                        </p>
+                    </div>
+                 )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

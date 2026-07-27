@@ -38,7 +38,7 @@ MODEL_ID   = "Qwen/Qwen2.5-VL-7B-Instruct"
 MODEL_DIR  = "/model-weights-qwen-vl"
 MODEL_PATH = os.path.join(MODEL_DIR, "Qwen2.5-VL-7B-Instruct")
 APP_NAME   = "qwen2-vl-doc"
-GPU_TYPE   = "A100-40GB"
+GPU_TYPE   = "A10G"
 
 DEFAULT_MAX_TOKENS  = 4096
 DEFAULT_TEMPERATURE = 0.1
