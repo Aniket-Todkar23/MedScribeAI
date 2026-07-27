@@ -1,16 +1,15 @@
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../lib/api';
 import {
-  Stethoscope, UserRound, ArrowRight, ShieldCheck, Activity,
-  FileText, Bot, Mail, Lock, User, Phone, Building, Hash, Eye, EyeOff,
-  AlertCircle, Loader2, ArrowLeft, Droplets, Heart, X
+  Mail, Lock, User, Hash, Eye, EyeOff, Loader2, X
 } from 'lucide-react';
 import { HeroSection } from '../components/blocks/hero-section-5';
 import FeaturesSectionDemo from '../components/ui/features-section-demo-3';
 import rheumatologyGif from '../assets/Rheumatology.gif';
+import patientVid from '../assets/Smart_EMR_video_demonstration_202607280210.mp4';
 
 type View = 'landing' | 'login' | 'signup-patient' | 'signup-doctor';
 
@@ -37,23 +36,15 @@ export default function Home() {
   const [pName, setPName] = useState('');
   const [pEmail, setPEmail] = useState('');
   const [pPassword, setPPassword] = useState('');
-  const [pPhone, setPPhone] = useState('');
-  const [pDob, setPDob] = useState('');
-  const [pGender, setPGender] = useState('');
-  const [pBlood, setPBlood] = useState('');
-
   // Doctor signup
   const [dName, setDName] = useState('');
   const [dEmail, setDEmail] = useState('');
   const [dPassword, setDPassword] = useState('');
-  const [dPhone, setDPhone] = useState('');
-  const [dSpecialization, setDSpecialization] = useState('');
   const [dLicense, setDLicense] = useState('');
-  const [dHospital, setDHospital] = useState('');
 
   useEffect(() => {
     if (isAuthenticated && user) {
-      navigate(user.role === 'doctor' ? '/doctor-dashboard' : '/patient-dashboard');
+      navigate(user.user_type === 'doctor' ? '/doctor' : '/patient');
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -62,8 +53,8 @@ export default function Home() {
     setError('');
     setLoading(true);
     try {
-      const { user, token } = await authApi.login(loginEmail, loginPassword);
-      setAuth(token, user);
+      const res = await authApi.login({ email: loginEmail, password: loginPassword });
+      setAuth(res.data.user, res.data.access_token, res.data.refresh_token);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Invalid credentials. Please try again.');
     } finally {
@@ -76,11 +67,11 @@ export default function Home() {
     setError('');
     setLoading(true);
     try {
-      const { user, token } = await authApi.registerPatient({
-        name: pName, email: pEmail, password: pPassword,
-        phone: pPhone, date_of_birth: pDob, gender: pGender, blood_group: pBlood
+      const res = await authApi.signupPatient({
+        full_name: pName, email: pEmail, password: pPassword,
+        phone: '0000000000', date_of_birth: '1990-01-01', gender: 'other', blood_group: 'O+'
       });
-      setAuth(token, user);
+      setAuth(res.data.user, res.data.access_token, res.data.refresh_token);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Registration failed. Email might be in use.');
     } finally {
@@ -93,12 +84,12 @@ export default function Home() {
     setError('');
     setLoading(true);
     try {
-      const { user, token } = await authApi.registerDoctor({
-        name: dName, email: dEmail, password: dPassword,
-        phone: dPhone, specialization: dSpecialization,
-        license_number: dLicense, hospital_affiliation: dHospital
+      const res = await authApi.signupDoctor({
+        full_name: dName, email: dEmail, password: dPassword,
+        phone: '0000000000', specialization: 'General',
+        license_number: dLicense, hospital_name: ''
       });
-      setAuth(token, user);
+      setAuth(res.data.user, res.data.access_token, res.data.refresh_token);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Registration failed. Email might be in use.');
     } finally {
@@ -108,6 +99,21 @@ export default function Home() {
 
   const inputCls = "w-full pl-11 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-white/30 focus:bg-white/10 transition-colors placeholder:text-zinc-500";
   const btnAuth = "w-full py-3 mt-6 bg-white hover:bg-zinc-200 text-black rounded-xl font-medium transition-colors disabled:opacity-50 flex items-center justify-center";
+
+  const patientVideoRef = useRef<HTMLVideoElement | null>(null);
+  const patientVideoInView = useInView(patientVideoRef, { margin: "200px 0px" });
+
+  useEffect(() => {
+    if (patientVideoRef.current) {
+      try {
+        if (patientVideoInView && patientVideoRef.current.paused) {
+          patientVideoRef.current.play().catch(() => {});
+        } else if (!patientVideoInView && !patientVideoRef.current.paused) {
+          patientVideoRef.current.pause();
+        }
+      } catch (e) {}
+    }
+  }, [patientVideoInView]);
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden flex flex-col items-center w-full">
@@ -119,11 +125,63 @@ export default function Home() {
       <div className="w-full min-h-screen z-10 bg-background overflow-x-hidden relative">
         <HeroSection setView={setView} />
         <FeaturesSectionDemo />
-        <div id="doctors" className="w-full min-h-[50vh] bg-background flex flex-col items-center justify-center border-t border-border/10">
+        <div id="doctors" className="w-full min-h-[40vh] bg-background flex flex-col items-center justify-center border-t border-white/5 py-12">
             <h2 className="text-3xl font-bold text-muted-foreground/30">How to use for Doctors (Coming Soon)</h2>
         </div>
-        <div id="patients" className="w-full min-h-[50vh] bg-muted/30 flex flex-col items-center justify-center border-t border-border/10">
-            <h2 className="text-3xl font-bold text-muted-foreground/30">How to use for Patients (Coming Soon)</h2>
+        <div id="patients" className="w-full py-24 bg-[#050505] flex flex-col items-center justify-center border-t border-white/5 relative overflow-hidden">
+            <div className="absolute inset-0 bg-blue-500/5 mix-blend-screen pointer-events-none" />
+            
+            <div className="max-w-7xl mx-auto px-6 z-10 w-full flex flex-col lg:flex-row items-center gap-12">
+                <div className="lg:w-1/2 text-left">
+                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">Focus on your Health, Not the Screen</h2>
+                    <p className="text-lg text-zinc-400 mb-10 leading-relaxed">
+                        Smart EMR transforms how you interact with your medical history. Experience zero-click ambient consultations, beautifully transparent patient dashboards, and seamlessly connected telemedicine appointments.
+                    </p>
+                    
+                    <div className="flex flex-col sm:flex-row gap-4 items-center">
+                        <button 
+                            onClick={() => setView('signup-patient')}
+                            className="px-8 py-3 bg-white text-black rounded-full font-semibold hover:bg-zinc-200 transition-colors shadow-xl shadow-white/10"
+                        >
+                            Register as Patient
+                        </button>
+                    </div>
+                </div>
+                <div className="lg:w-1/2 w-full">
+                    <div className="relative rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(50,150,255,0.15)] border border-white/10 aspect-[16/9] bg-black">
+                       
+                        <video 
+                            src={patientVid}
+                            ref={(el) => { 
+                                if (el) {
+                                    el.playbackRate = 0.75;
+                                }
+                                patientVideoRef.current = el;
+                            }}
+                            className="w-full h-full object-cover"
+                            loop
+                            muted 
+                            playsInline
+                            preload="metadata"
+                        />
+                    </div>
+                </div>
+            </div>
+            {/* Highlight Cards */}
+            <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto px-6 z-10">
+                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-md">
+                   <h3 className="text-xl font-bold text-white mb-2">Automated EMR Tracking</h3>
+                   <p className="text-sm text-zinc-400 leading-relaxed">Our ambient AI captures your consultation naturally and updates your history instantly.</p>
+                </div>
+                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-md">
+                   <h3 className="text-xl font-bold text-white mb-2">Clear Telehealth</h3>
+                   <p className="text-sm text-zinc-400 leading-relaxed">Connect to your doctor via crystal-clear integrated video appointments from anywhere.</p>
+                </div>
+                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-md">
+                   <h3 className="text-xl font-bold text-white mb-2">Instant Summaries</h3>
+                   <p className="text-sm text-zinc-400 leading-relaxed">Walk away with an AI-generated, easy-to-understand breakdown of what you need to do next.</p>
+                </div>
+            </div>
         </div>
       </div>
 
@@ -132,7 +190,7 @@ export default function Home() {
         {view !== 'landing' && (
           <motion.div 
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 sm:p-6"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-md p-4 sm:p-6"
           >
             <motion.div 
               initial={{ y: 50, scale: 0.95 }} animate={{ y: 0, scale: 1 }} exit={{ y: 20, scale: 0.95 }}

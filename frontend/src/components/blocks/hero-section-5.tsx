@@ -1,28 +1,49 @@
 'use client'
 import React from 'react'
-import { Link } from 'react-router-dom'
-import { Button } from '@/components/ui/button'
-import { InfiniteSlider } from '@/components/ui/infinite-slider'
-import { ProgressiveBlur } from '@/components/ui/progressive-blur'
-import { cn } from '@/lib/utils'
-import { Menu, X, ChevronRight, Activity, HeartPulse, Stethoscope } from 'lucide-react'
-import { useScroll, motion, AnimatePresence } from 'framer-motion'
-import { BottomNavBar } from '@/components/ui/bottom-nav-bar'
+import { Button } from '../ui/button'
+import { InfiniteSlider } from '../ui/infinite-slider'
+import { cn } from '../../lib/utils'
+import { ChevronRight, Activity, HeartPulse, Stethoscope } from 'lucide-react'
+import { useScroll, motion, AnimatePresence, useInView } from 'framer-motion'
+import { BottomNavBar } from '../ui/bottom-nav-bar'
 import heroBgVideo from '@/assets/Storyboard_animation_sequence_video_202607272342.mp4'
 
 export function HeroSection({ setView }: { setView: (view: 'landing' | 'login' | 'signup-patient' | 'signup-doctor') => void }) {
+    const heroVideoRef = React.useRef<HTMLVideoElement | null>(null);
+    const heroVideoInView = useInView(heroVideoRef, { margin: "200px 0px" });
+  
+    React.useEffect(() => {
+      if (heroVideoRef.current) {
+        try {
+          if (heroVideoInView && heroVideoRef.current.paused) {
+            heroVideoRef.current.play().catch(() => {});
+          } else if (!heroVideoInView && !heroVideoRef.current.paused) {
+            heroVideoRef.current.pause();
+          }
+        } catch (e) {}
+      }
+    }, [heroVideoInView]);
+
     return (
         <div className="w-full">
             <HeroHeader setView={setView} />
             <main className="overflow-hidden w-full">
                 <section className="relative w-full min-h-[100vh] flex items-center pt-20">
                     <video
-                        autoPlay
+                        ref={heroVideoRef}
                         loop
                         muted
                         playsInline
                         className="absolute inset-0 size-full object-cover z-0"
                         src={heroBgVideo}
+                        preload="metadata"
+                        onTimeUpdate={(e) => {
+                            const vid = e.target as HTMLVideoElement;
+                            if (vid.duration && vid.currentTime >= vid.duration - 0.05) {
+                                vid.currentTime = 0;
+                                vid.play().catch(() => {});
+                            }
+                        }}
                     ></video>
                     {/* Dark gradient overlay for extreme contrast */}
                     <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/90 z-0"></div>
@@ -62,8 +83,8 @@ export function HeroSection({ setView }: { setView: (view: 'landing' | 'login' |
                             </div>
                             <div className="relative py-6 md:w-[calc(100%-11rem)] overflow-hidden">
                                 <InfiniteSlider
-                                    speedOnHover={20}
-                                    speed={40}
+                                    durationOnHover={20}
+                                    duration={40}
                                     gap={112}>
                                     <div className="flex items-center justify-center opacity-60 hover:opacity-100 transition-opacity">
                                         <img className="h-6 w-auto grayscale" src="https://upload.wikimedia.org/wikipedia/commons/f/fb/Mayo_Clinic_logo.svg" alt="Mayo Clinic" />
@@ -95,7 +116,7 @@ export function HeroSection({ setView }: { setView: (view: 'landing' | 'login' |
                 {/* Mobile Bottom Navigation mapping to home views */}
                 <BottomNavBar 
                   className="lg:hidden" 
-                  onNavClick={(action) => {
+                  onNavClick={(action: string) => {
                     if (['landing', 'login', 'signup-patient', 'signup-doctor'].includes(action)) {
                       setView(action as any);
                     } else if (['features', 'doctors', 'patients'].includes(action)) {

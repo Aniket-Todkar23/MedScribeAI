@@ -12,6 +12,8 @@
   "dependencies": {
     "@livekit/components-react": "^2.9.20",
     "@radix-ui/react-slot": "^1.3.3",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
     "@tabler/icons-react": "^3.45.0",
     "@tanstack/react-query": "^5.90.21",
     "axios": "^1.13.6",
@@ -28,6 +30,8 @@
     "react-router-dom": "^7.13.1",
     "react-use-measure": "^2.1.7",
     "tailwind-merge": "^3.5.0",
+    "three": "^0.185.1",
+    "three-globe": "^2.45.2",
     "zustand": "^5.0.11"
   },
   "devDependencies": {
@@ -36,6 +40,7 @@
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.185.1",
     "@vitejs/plugin-react": "^5.1.1",
     "autoprefixer": "^10.4.27",
     "eslint": "^9.39.1",

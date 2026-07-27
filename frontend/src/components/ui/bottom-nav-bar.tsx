@@ -5,14 +5,12 @@ import { motion } from "framer-motion";
 import {
   Home,
   Activity,
-  Video,
-  ShieldCheck,
   User,
   HeartPulse,
   Stethoscope
 } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "../../lib/utils";
 
 const defaultNavItems = [
   { label: "Home", icon: Home, action: 'landing' },
