@@ -35,7 +35,7 @@ import {
 
 /* ────────────────── Section Toggle ────────────────── */
 function Section({ title, icon: Icon, children, defaultOpen = true, badge }: {
-  title: string; icon: React.ElementType; children: React.ReactNode; defaultOpen?: boolean; badge?: string | number;
+  title: string; icon: React.FC<{ className?: string }>; children: React.ReactNode; defaultOpen?: boolean; badge?: string | number;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -286,7 +286,7 @@ function ParticipantTile({
   onEndOrLeave?: () => void;
   endLabel?: string;
   endColor?: string;
-  endIcon?: React.ElementType;
+  endIcon?: React.FC<{ className?: string }>;
   isPending?: boolean;
   isSpeaking?: boolean;
 }) {

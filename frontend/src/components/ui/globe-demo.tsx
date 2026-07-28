@@ -1,6 +1,4 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { World } from "@/components/ui/globe";
+import { World } from "./globe";
 
 export default function GlobeDemo() {
   const globeConfig = {

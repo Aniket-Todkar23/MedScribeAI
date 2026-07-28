@@ -286,10 +286,9 @@ export default function PatientDashboard() {
                           <p className="text-sm font-medium">{format(d, 'MMM d')}</p>
                           <p className="text-[11px] text-muted-foreground">{format(d, 'h:mm a')}</p>
                         </div>
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
-                          apt.status === 'confirmed' ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' :
-                          'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400'
-                        }`}>{apt.status}</span>
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${apt.status === 'confirmed' ? 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400' :
+                            'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-400'
+                          }`}>{apt.status}</span>
                         {isVideo && apt.meeting_room_id && (
                           <button onClick={() => navigate(`/meeting/${apt.appointment_id}`)} className="px-2.5 py-1 bg-blue-600 text-white rounded-full text-[11px] font-medium hover:bg-blue-700">
                             Join

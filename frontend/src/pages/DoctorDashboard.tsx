@@ -234,9 +234,8 @@ export default function DoctorDashboard() {
                 <button
                   key={p.id}
                   onClick={() => setSelectedPatientId(p.id)}
-                  className={`w-full text-left p-2.5 rounded-lg text-sm transition-colors flex items-center justify-between ${
-                    selectedPatientId === p.id ? 'bg-primary/10 text-primary border border-primary/20' : 'hover:bg-muted/50'
-                  }`}
+                  className={`w-full text-left p-2.5 rounded-lg text-sm transition-colors flex items-center justify-between ${selectedPatientId === p.id ? 'bg-primary/10 text-primary border border-primary/20' : 'hover:bg-muted/50'
+                    }`}
                 >
                   <span className="font-medium text-[13px]">{p.name || 'Unknown'}</span>
                   <ChevronRight className="w-3.5 h-3.5 opacity-50" />

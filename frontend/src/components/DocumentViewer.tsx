@@ -49,7 +49,7 @@ const urgencyColor: Record<string, string> = {
 /* ── Section wrapper ─────────────────────────────────────────────────────── */
 
 function Section({ icon: Icon, title, children, defaultOpen = true }: {
-  icon: React.ElementType; title: string; children: React.ReactNode; defaultOpen?: boolean;
+  icon: React.FC<{ className?: string }>; title: string; children: React.ReactNode; defaultOpen?: boolean;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (

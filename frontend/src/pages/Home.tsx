@@ -10,6 +10,7 @@ import { HeroSection } from '../components/blocks/hero-section-5';
 import FeaturesSectionDemo from '../components/ui/features-section-demo-3';
 import rheumatologyGif from '../assets/Rheumatology.gif';
 import patientVid from '../assets/Smart_EMR_video_demonstration_202607280210.mp4';
+import doctorVid from '../assets/Doctor_workflow_medical_software…_202607281412.mp4';
 
 type View = 'landing' | 'login' | 'signup-patient' | 'signup-doctor';
 
@@ -102,6 +103,8 @@ export default function Home() {
 
   const patientVideoRef = useRef<HTMLVideoElement | null>(null);
   const patientVideoInView = useInView(patientVideoRef, { margin: "200px 0px" });
+  const doctorVideoRef = useRef<HTMLVideoElement | null>(null);
+  const doctorVideoInView = useInView(doctorVideoRef, { margin: "200px 0px" });
 
   useEffect(() => {
     if (patientVideoRef.current) {
@@ -115,6 +118,18 @@ export default function Home() {
     }
   }, [patientVideoInView]);
 
+  useEffect(() => {
+    if (doctorVideoRef.current) {
+      try {
+        if (doctorVideoInView && doctorVideoRef.current.paused) {
+          doctorVideoRef.current.play().catch(() => {});
+        } else if (!doctorVideoInView && !doctorVideoRef.current.paused) {
+          doctorVideoRef.current.pause();
+        }
+      } catch (e) {}
+    }
+  }, [doctorVideoInView]);
+
   return (
     <div className="min-h-screen bg-background relative overflow-hidden flex flex-col items-center w-full">
       {/* Background blobs for aesthetics */}
@@ -125,8 +140,60 @@ export default function Home() {
       <div className="w-full min-h-screen z-10 bg-background overflow-x-hidden relative">
         <HeroSection setView={setView} />
         <FeaturesSectionDemo />
-        <div id="doctors" className="w-full min-h-[40vh] bg-background flex flex-col items-center justify-center border-t border-white/5 py-12">
-            <h2 className="text-3xl font-bold text-muted-foreground/30">How to use for Doctors (Coming Soon)</h2>
+        <div id="doctors" className="w-full py-24 bg-[#0a0a0a] flex flex-col items-center justify-center border-t border-white/5 relative overflow-hidden">
+            <div className="absolute inset-0 bg-primary/5 mix-blend-screen pointer-events-none" />
+            
+            <div className="max-w-7xl mx-auto px-6 z-10 w-full flex flex-col lg:flex-row-reverse items-center gap-12">
+                <div className="lg:w-1/2 text-left">
+                    <h2 className="text-4xl md:text-5xl font-bold text-white mb-6 tracking-tight">Supercharge your Clinical Workflow</h2>
+                    <p className="text-lg text-zinc-400 mb-10 leading-relaxed">
+                        Smart EMR acts as your ambient co-pilot. Focus entirely on your patient while our AI handles the documentation, structures the clinical notes, and suggests diagnosis codes in real-time.
+                    </p>
+                    
+                    <div className="flex flex-col sm:flex-row gap-4 items-center">
+                        <button 
+                            onClick={() => setView('signup-doctor')}
+                            className="px-8 py-3 bg-primary text-primary-foreground rounded-full font-semibold hover:bg-primary/90 transition-colors shadow-xl shadow-primary/20"
+                        >
+                            Register as Clinician
+                        </button>
+                    </div>
+                </div>
+                <div className="lg:w-1/2 w-full">
+                    <div className="relative rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(50,150,255,0.15)] border border-white/10 aspect-[16/9] bg-black">
+                       
+                        <video 
+                            src={doctorVid}
+                            ref={(el) => { 
+                                if (el) {
+                                    el.playbackRate = 0.75;
+                                }
+                                doctorVideoRef.current = el;
+                            }}
+                            className="w-full h-full object-cover"
+                            loop
+                            muted 
+                            playsInline
+                            preload="metadata"
+                        />
+                    </div>
+                </div>
+            </div>
+            {/* Highlight Cards */}
+            <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto px-6 z-10">
+                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-md">
+                   <h3 className="text-xl font-bold text-white mb-2">Ambient Scribe</h3>
+                   <p className="text-sm text-zinc-400 leading-relaxed">Automatically transcribe and structure entire patient visits into SOAP notes.</p>
+                </div>
+                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-md">
+                   <h3 className="text-xl font-bold text-white mb-2">Global Telehealth</h3>
+                   <p className="text-sm text-zinc-400 leading-relaxed">Conduct secure, latency-free video consultations with live AI transcription feeds.</p>
+                </div>
+                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl backdrop-blur-md">
+                   <h3 className="text-xl font-bold text-white mb-2">Smart Dashboard</h3>
+                   <p className="text-sm text-zinc-400 leading-relaxed">View compiled patient histories and AI analytics instantly in a unified interface.</p>
+                </div>
+            </div>
         </div>
         <div id="patients" className="w-full py-24 bg-[#050505] flex flex-col items-center justify-center border-t border-white/5 relative overflow-hidden">
             <div className="absolute inset-0 bg-blue-500/5 mix-blend-screen pointer-events-none" />

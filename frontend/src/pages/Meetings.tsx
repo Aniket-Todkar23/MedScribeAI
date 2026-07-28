@@ -79,7 +79,7 @@ function TranscriptionViewer({ transcription }: { transcription: string }) {
 }
 
 /* ──────────────── Collapsible Section ──────────────── */
-function Section({ title, icon: Icon, children, defaultOpen = true }: { title: string; icon: React.ElementType; children: React.ReactNode; defaultOpen?: boolean }) {
+function Section({ title, icon: Icon, children, defaultOpen = true }: { title: string; icon: React.FC<{ className?: string }>; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="bg-card border border-border rounded-2xl overflow-hidden">
