@@ -130,14 +130,14 @@ export default function Navbar() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden glass border-t border-border"
+            className="md:hidden bg-background/98 backdrop-blur-2xl border-t border-border shadow-2xl relative z-50"
           >
             <div className="px-4 pt-2 pb-4 space-y-1">
               {user ? (
                 <>
                   {/* Mobile User Badge */}
-                  <div className="flex items-center gap-3 px-3 py-3 mb-2 bg-muted/40 rounded-xl">
-                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
+                  <div className="flex items-center gap-3 px-3 py-3 mb-2 bg-muted/40 rounded-xl border border-border/50">
+                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center shadow-sm">
                       {user.user_type === 'doctor'
                         ? <Stethoscope className="h-4 w-4 text-primary" />
                         : <User className="h-4 w-4 text-primary" />
@@ -152,25 +152,27 @@ export default function Navbar() {
                   </div>
 
                   {/* Mobile Nav Links */}
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.to}
-                      to={link.to}
-                      onClick={() => setIsOpen(false)}
-                      className={`block px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
-                        isActive(link.to, link.exact)
-                          ? 'bg-primary/10 text-primary'
-                          : 'text-foreground hover:bg-secondary/50'
-                      }`}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
+                  <div className="space-y-1">
+                    {navLinks.map((link) => (
+                      <Link
+                        key={link.to}
+                        to={link.to}
+                        onClick={() => setIsOpen(false)}
+                        className={`block px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                          isActive(link.to, link.exact)
+                            ? 'bg-primary text-primary-foreground shadow-md shadow-primary/25'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-muted/80'
+                        }`}
+                      >
+                        {link.label}
+                      </Link>
+                    ))}
+                  </div>
 
-                  <div className="border-t border-border mt-2 pt-2">
+                  <div className="border-t border-border mt-3 pt-3">
                     <button
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+                      className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
                     >
                       <LogOut className="h-4 w-4" />
                       Sign Out
@@ -178,13 +180,15 @@ export default function Navbar() {
                   </div>
                 </>
               ) : (
-                <Link
-                  to="/"
-                  onClick={() => setIsOpen(false)}
-                  className="block px-3 py-2 rounded-md text-base text-foreground font-medium hover:bg-secondary/50"
-                >
-                  Login
-                </Link>
+                <div className="pt-2">
+                  <Link
+                    to="/"
+                    onClick={() => setIsOpen(false)}
+                    className="block w-full text-center px-4 py-3 rounded-xl text-sm font-medium bg-primary text-primary-foreground shadow-md hover:bg-primary/90 transition-colors"
+                  >
+                    Login
+                  </Link>
+                </div>
               )}
             </div>
           </motion.div>

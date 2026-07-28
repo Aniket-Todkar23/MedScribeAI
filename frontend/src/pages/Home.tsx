@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { useAuthStore } from '../store/authStore';
 import { useNavigate } from 'react-router-dom';
@@ -7,7 +7,7 @@ import {
   Mail, Lock, User, Hash, Eye, EyeOff, Loader2, X
 } from 'lucide-react';
 import { HeroSection } from '../components/blocks/hero-section-5';
-import FeaturesSectionDemo from '../components/ui/features-section-demo-3';
+const FeaturesSectionDemo = lazy(() => import('../components/ui/features-section-demo-3'));
 import rheumatologyGif from '../assets/Rheumatology.gif';
 import patientVid from '../assets/Smart_EMR_video_demonstration_202607280210.mp4';
 import doctorVid from '../assets/Doctor_workflow_medical_software…_202607281412.mp4';
@@ -139,7 +139,9 @@ export default function Home() {
       {/* ── Always Display Landing ── */}
       <div className="w-full min-h-screen z-10 bg-background overflow-x-hidden relative">
         <HeroSection setView={setView} />
-        <FeaturesSectionDemo />
+        <Suspense fallback={<div className="h-64 flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>}>
+          <FeaturesSectionDemo />
+        </Suspense>
         <div id="doctors" className="w-full py-24 bg-[#0a0a0a] flex flex-col items-center justify-center border-t border-white/5 relative overflow-hidden">
             <div className="absolute inset-0 bg-primary/5 mix-blend-screen pointer-events-none" />
             
@@ -163,7 +165,6 @@ export default function Home() {
                     <div className="relative rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(50,150,255,0.15)] border border-white/10 aspect-[16/9] bg-black">
                        
                         <video 
-                            src={doctorVid}
                             ref={(el) => { 
                                 if (el) {
                                     el.playbackRate = 0.75;
@@ -171,11 +172,16 @@ export default function Home() {
                                 doctorVideoRef.current = el;
                             }}
                             className="w-full h-full object-cover"
+                            autoPlay
                             loop
                             muted 
                             playsInline
-                            preload="metadata"
-                        />
+                            preload="auto"
+                            disablePictureInPicture
+                        >
+                            <source src={doctorVid} type="video/mp4" />
+                            Your browser does not support the video tag.
+                        </video>
                     </div>
                 </div>
             </div>
@@ -218,7 +224,6 @@ export default function Home() {
                     <div className="relative rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(50,150,255,0.15)] border border-white/10 aspect-[16/9] bg-black">
                        
                         <video 
-                            src={patientVid}
                             ref={(el) => { 
                                 if (el) {
                                     el.playbackRate = 0.75;
@@ -226,11 +231,16 @@ export default function Home() {
                                 patientVideoRef.current = el;
                             }}
                             className="w-full h-full object-cover"
+                            autoPlay
                             loop
                             muted 
                             playsInline
-                            preload="metadata"
-                        />
+                            preload="auto"
+                            disablePictureInPicture
+                        >
+                            <source src={patientVid} type="video/mp4" />
+                            Your browser does not support the video tag.
+                        </video>
                     </div>
                 </div>
             </div>

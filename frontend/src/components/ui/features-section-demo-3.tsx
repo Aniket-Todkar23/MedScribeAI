@@ -223,7 +223,11 @@ import GlobeDemo from "./globe-demo";
 export const SkeletonFour = () => {
   return (
     <div className="relative mt-4 flex h-60 w-full flex-col items-center justify-center bg-transparent overflow-hidden">
-      <GlobeDemo />
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="h-[200%] aspect-square relative -mt-4">
+          <GlobeDemo />
+        </div>
+      </div>
     </div>
   );
 };
