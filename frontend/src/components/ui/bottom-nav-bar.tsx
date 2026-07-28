@@ -61,8 +61,8 @@ export function BottomNavBar({
             className={cn(
               "flex items-center gap-0 px-3 py-2 rounded-full transition-colors duration-200 relative h-10 min-w-[44px] min-h-[40px] max-h-[44px]",
               isActive
-                ? "bg-primary/20 text-white gap-2"
-                : "bg-transparent text-white/70 hover:bg-white/10 hover:text-white",
+                ? "bg-primary text-primary-foreground gap-2 shadow-sm"
+                : "bg-transparent text-muted-foreground hover:bg-secondary/50 hover:text-foreground",
               "focus:outline-none focus-visible:ring-0",
             )}
             onClick={() => {
@@ -96,7 +96,7 @@ export function BottomNavBar({
               <span
                 className={cn(
                   "font-medium text-xs whitespace-nowrap select-none transition-opacity duration-200 overflow-hidden text-ellipsis leading-[1.9]",
-                  isActive ? "text-white" : "opacity-0",
+                  isActive ? "text-primary-foreground" : "opacity-0",
                 )}
                 title={item.label}
               >

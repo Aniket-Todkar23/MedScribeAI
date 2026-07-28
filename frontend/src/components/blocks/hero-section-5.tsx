@@ -119,8 +119,19 @@ export function HeroSection({ setView }: { setView: (view: 'landing' | 'login' |
                   onNavClick={(action: string) => {
                     if (['landing', 'login', 'signup-patient', 'signup-doctor'].includes(action)) {
                       setView(action as any);
+                      if (action === 'landing') {
+                        if ((window as any).lenis) (window as any).lenis.scrollTo(0, { offset: 0 });
+                        else window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }
                     } else if (['features', 'doctors', 'patients'].includes(action)) {
-                      document.getElementById(action)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      const target = document.getElementById(action);
+                      if (target) {
+                        if ((window as any).lenis) {
+                          (window as any).lenis.scrollTo(target, { offset: -80 }); // offset for navbar
+                        } else {
+                          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                      }
                     }
                   }} 
                 />
@@ -148,6 +159,7 @@ const HeroHeader = ({ setView }: { setView: (view: 'landing' | 'login' | 'signup
     }, [scrollY])
 
     return (
+        <>
         <header className="fixed top-6 left-0 right-0 z-50 hidden md:flex justify-center px-4 w-full">
             <nav className={cn(
                 "flex items-center justify-between w-full max-w-5xl transition-all duration-500",
@@ -173,7 +185,15 @@ const HeroHeader = ({ setView }: { setView: (view: 'landing' | 'login' | 'signup
                                     href={item.href}
                                     onClick={(e) => {
                                         e.preventDefault();
-                                        document.getElementById(item.href.substring(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                        const targetId = item.href.substring(1);
+                                        const target = document.getElementById(targetId);
+                                        if (target) {
+                                            if ((window as any).lenis) {
+                                                (window as any).lenis.scrollTo(target, { offset: -100 }); // account for fixed header
+                                            } else {
+                                                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                            }
+                                        }
                                     }}
                                     className={cn("px-5 py-2 rounded-full text-sm font-medium hover:shadow-sm transition-all duration-300 block",
                                         scrolled ? "text-foreground/70 hover:text-foreground hover:bg-white" 
@@ -238,6 +258,21 @@ const HeroHeader = ({ setView }: { setView: (view: 'landing' | 'login' | 'signup
                 </div>
             </nav>
         </header>
+
+        {/* Mobile Top Left Logo */}
+        <header className="fixed top-6 left-4 z-50 flex md:hidden">
+            <div
+                onClick={() => setView('landing')}
+                className={cn("flex flex-shrink-0 items-center space-x-2 cursor-pointer transition-transform hover:scale-105 p-1.5 rounded-full",
+                    scrolled ? "bg-white/70 backdrop-blur-3xl border border-black/10 shadow-xl" : "bg-black/20 backdrop-blur-md border border-white/10 shadow-lg"
+                )}>
+                <div className="bg-primary/20 p-1.5 rounded-full backdrop-blur-sm">
+                    <Activity className="w-4 h-4 text-primary drop-shadow-md" />
+                </div>
+                <span className={cn("font-bold text-lg ml-0.5 pr-2.5 tracking-wide transition-colors", scrolled ? "text-foreground" : "text-white")}>Smart EMR</span>
+            </div>
+        </header>
+        </>
     )
 }
 
