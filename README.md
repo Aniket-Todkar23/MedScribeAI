@@ -6,32 +6,7 @@
 
 ## Architecture
 
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                   Docker Compose — medscribe-ai                  │
-│                                                                  │
-│  ┌──────────┐  ┌──────────┐  ┌────────────┐  ┌────────────────┐  │
-│  │postgresdb│  │ livekit  │  │ ai_backend │  │    backend     │  │
-│  │ :5433    │  │ :7880    │  │ :8000      │  │    :3001       │  │
-│  └──────────┘  └──────────┘  └──────┴─────┘  └───────┴────────┘  │
-│                                    │               │             │
-│  ┌──────────────────────────────────────────────────────────┐    │
-│  │              frontend  (nginx :5173)                     │    │
-│  │              frontend  (nginx :5173)                     │    │
-│  │              frontend  (nginx :5173)                     │    │
-│  │         React 19 · Vite 7 · Tailwind v4                  │    │
-│  └──────────────────────────────────────────────────────────┘    │
-│                                                                  │
-│                              ┌──────────────────────────────┐    │
-│                              │     Modal GPU Cloud          │    │
-│                              │ MedGemma-27B │ Qwen2.5-VL-7B │    │
-│                              └──────────────────────────────┘    │
-│                                                                  │
-│  ┌──────────────────────────────────────────────────────────┐    │
-│  │    Ollama (host) — Qwen2.5:7b  (local LLM fallback)      │    │
-│  └──────────────────────────────────────────────────────────┘    │
-└──────────────────────────────────────────────────────────────────┘
-```
+![System Architecture](architecture-diagram.png)
 
 | Service | Technology | Role |
 |---------|-----------|------|
@@ -72,6 +47,8 @@
 
 ### LangGraph Agents (3-Tier Fallback)
 Both patient and clinician agents use an automatic fallback chain:
+
+![LangGraph Healthcare Agent Flow](langgraph-agent-flow.png)
 
 1. **Gemini 2.0 Flash** — Primary LLM via Google API (5-minute circuit-breaker on quota errors)
 2. **Ollama Qwen2.5:7b** — Local fallback via httpx (zero extra dependencies)
@@ -415,4 +392,3 @@ MedScribe-AI/
 | `WHISPER_COMPUTE_TYPE` | No | Default `int8` |
 
 ---
-
